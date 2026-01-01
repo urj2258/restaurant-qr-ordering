@@ -4,19 +4,20 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { formatPrice, createOrder, generateId } from '@/lib/storage';
+import ThemeToggle from '@/components/ThemeToggle';
 import { Order, PaymentMethod } from '@/lib/types';
 
 const paymentMethods: { id: PaymentMethod; label: string; icon: string }[] = [
-    { id: 'EasyPaisa', label: 'EasyPaisa', icon: '📱' },
-    { id: 'JazzCash', label: 'JazzCash', icon: '🔴' },
-    { id: 'Bank Transfer', label: 'Bank Transfer', icon: '🏦' },
-    { id: 'Cash on Delivery', label: 'Cash on Delivery', icon: '💵' }
+    { id: 'EasyPaisa', label: 'EasyPaisa', icon: '' },
+    { id: 'JazzCash', label: 'JazzCash', icon: '' },
+    { id: 'Bank Transfer', label: 'Bank Transfer', icon: '' },
+    { id: 'Cash on Delivery', label: 'Cash on Delivery', icon: '' }
 ];
 
 export default function CheckoutPage() {
     const params = useParams();
     const router = useRouter();
-    const tableNumber = parseInt(params.table as string) || 1;
+    const tableId = params.table as string;
     const { items, getTotals, clearCart } = useCart();
     const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('Cash on Delivery');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -28,11 +29,11 @@ export default function CheckoutPage() {
 
         setIsProcessing(true);
 
-        // Simulate API call (Network delay simulated by async fetch itself, but keeping minor delay for UX if desired)
+        // Simulate API call
         const newOrderId = generateId();
         const order: Order = {
             id: newOrderId,
-            tableNumber,
+            tableId,
             items: [...items],
             status: 'pending',
             paymentMethod: selectedMethod,
@@ -46,7 +47,7 @@ export default function CheckoutPage() {
         const result = await createOrder(order);
         if (result) {
             clearCart();
-            router.push(`/customer/${tableNumber}/tracking/${newOrderId}`);
+            router.push(`/customer/${tableId}/tracking/${newOrderId}`);
         } else {
             setIsProcessing(false);
             alert('Failed to place order. Please try again.');
@@ -68,7 +69,7 @@ export default function CheckoutPage() {
                     <h2>Cart is Empty</h2>
                     <button
                         className="btn btn-primary"
-                        onClick={() => router.push(`/customer/${tableNumber}`)}
+                        onClick={() => router.push(`/customer/${tableId}`)}
                         style={{ marginTop: 'var(--space-4)' }}
                     >
                         Back to Menu
@@ -100,8 +101,11 @@ export default function CheckoutPage() {
                     <div>
                         <h1 style={{ fontSize: 'var(--font-size-xl)' }}>Checkout</h1>
                         <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
-                            Table #{tableNumber}
+                            Table {tableId.length > 8 ? tableId.substring(0, 8) + '...' : tableId}
                         </p>
+                    </div>
+                    <div style={{ marginLeft: 'auto' }}>
+                        <ThemeToggle />
                     </div>
                 </div>
 

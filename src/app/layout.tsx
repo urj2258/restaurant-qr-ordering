@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 export const metadata: Metadata = {
-  title: "Neon Bites - Restaurant Ordering System",
-  description: "Order delicious food directly from your table. Experience the fusion of technology and flavors.",
+  title: "Abbottabad Eats - Digital Ordering System",
+  description: "Experience the future of dining with Abbottabad Eats.",
   keywords: ["restaurant", "ordering", "food", "menu", "QR code"],
 };
 
@@ -15,7 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

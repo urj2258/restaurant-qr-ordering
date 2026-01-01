@@ -4,30 +4,37 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { CartItem, MenuItem, Extra, Size } from '@/lib/types';
 import { getCart, saveCart, clearCart as clearCartStorage, generateId, calculateOrderTotals } from '@/lib/storage';
 
-interface CartContextType {
+interface CartContextProps {
     items: CartItem[];
-    addItem: (menuItem: MenuItem, quantity?: number, size?: Size, extras?: Extra[], instructions?: string) => void;
+    addItem: (item: MenuItem, quantity?: number, size?: Size, extras?: Extra[], instructions?: string) => void;
     removeItem: (itemId: string) => void;
     updateQuantity: (itemId: string, quantity: number) => void;
     clearCart: () => void;
-    getItemCount: () => number;
     getTotals: () => { subtotal: number; tax: number; total: number };
-    tableNumber: number;
+    getItemCount: () => number;
+    tableNumber: string; // Changed to string for UUID
 }
 
-const CartContext = createContext<CartContextType | null>(null);
+const CartContext = createContext<CartContextProps | null>(null);
 
-export function CartProvider({ children, tableNumber }: { children: ReactNode; tableNumber: number }) {
-    const [items, setItems] = useState<CartItem[]>([]);
+export const CartProvider = ({ children, tableNumber }: { children: ReactNode; tableNumber: string }) => {
+    const [items, setItems] = useState<CartItem[]>(() => {
+        return getCart(tableNumber);
+    });
+    const [isLoaded, setIsLoaded] = useState(true);
 
+    // Sync state if tableNumber changes
     useEffect(() => {
         const savedCart = getCart(tableNumber);
         setItems(savedCart);
     }, [tableNumber]);
 
+    // Save cart to local storage whenever it changes
     useEffect(() => {
-        saveCart(tableNumber, items);
-    }, [items, tableNumber]);
+        if (isLoaded) {
+            saveCart(tableNumber, items);
+        }
+    }, [items, tableNumber, isLoaded]);
 
     const addItem = (
         menuItem: MenuItem,

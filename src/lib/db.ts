@@ -28,7 +28,7 @@ function readDb(): Schema {
         // Ensure tables array exists for existing files
         if (!parsed.tables) parsed.tables = [];
         return parsed;
-    } catch (error) {
+    } catch {
         return { orders: [], tables: [] };
     }
 }
@@ -77,7 +77,7 @@ export const db = {
         return table;
     },
 
-    deleteTable: (id: number) => {
+    deleteTable: (id: string) => {
         const data = readDb();
         const initialLength = data.tables.length;
         data.tables = data.tables.filter(t => t.id !== id);

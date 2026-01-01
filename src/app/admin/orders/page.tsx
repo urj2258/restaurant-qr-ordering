@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Order, OrderStatus } from '@/lib/types';
-import { fetchOrders, updateOrderStatus, formatPrice } from '@/lib/storage';
+import { fetchOrders, subscribeToOrders, updateOrderStatus, formatPrice } from '@/lib/storage';
+import ThemeToggle from '@/components/ThemeToggle';
+import BrandIcon from '@/components/BrandIcon';
 import styles from '../admin.module.css';
 
 const statusColumns: { status: OrderStatus; label: string; color: string }[] = [
@@ -33,18 +35,15 @@ export default function OrdersPage() {
     };
 
     useEffect(() => {
+        // Initial load
         loadOrders();
 
-        // Listen for changes
-        // For API implementation, we rely on polling or we could implement a websocket/SSE
-        // For now, removing the localStorage listener and relying on polling as that's simpler for this "file-db" mock
+        // Real-time subscription
+        const unsubscribe = subscribeToOrders((updatedOrders) => {
+            setOrders(updatedOrders);
+        });
 
-        // Poll every 3 seconds
-        const interval = setInterval(loadOrders, 3000);
-
-        return () => {
-            clearInterval(interval);
-        };
+        return () => unsubscribe();
     }, []);
 
     const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
@@ -55,11 +54,11 @@ export default function OrdersPage() {
     const pendingCount = orders.filter(o => o.status === 'pending').length;
 
     const navItems = [
-        { href: '/admin', label: 'Dashboard', icon: '📊' },
-        { href: '/admin/orders', label: 'Orders', icon: '📋', badge: pendingCount },
-        { href: '/admin/tables', label: 'Tables', icon: '🍽️' },
-        { href: '/admin/menu', label: 'Menu', icon: '📖' },
-        { href: '/admin/analytics', label: 'Analytics', icon: '📈' }
+        { href: '/admin', label: 'Dashboard' },
+        { href: '/admin/orders', label: 'Orders', badge: pendingCount },
+        { href: '/admin/tables', label: 'Tables' },
+        { href: '/admin/menu', label: 'Menu' },
+        { href: '/admin/analytics', label: 'Analytics' }
     ];
 
     return (
@@ -67,8 +66,10 @@ export default function OrdersPage() {
             {/* Sidebar */}
             <aside className={styles.sidebar}>
                 <div className={styles.logo}>
-                    <div className={styles.logoIcon}>⚡</div>
-                    <span className={styles.logoText}>Neon Bites</span>
+                    <div className={styles.logoIcon}>
+                        <BrandIcon size={24} color="var(--accent-primary)" />
+                    </div>
+                    <span className={styles.logoText}>Abbottabad Eats</span>
                 </div>
 
                 <nav className={styles.navSection}>
@@ -79,13 +80,18 @@ export default function OrdersPage() {
                             href={item.href}
                             className={`${styles.navItem} ${pathname === item.href ? styles.active : ''}`}
                         >
-                            <span className={styles.navIcon}>{item.icon}</span>
                             <span>{item.label}</span>
                             {item.badge !== undefined && item.badge > 0 && (
                                 <span className={styles.navBadge}>{item.badge}</span>
                             )}
                         </Link>
                     ))}
+                    <div className={styles.navItem} style={{ marginTop: 'auto', padding: '0 1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                            <span>Theme</span>
+                            <ThemeToggle />
+                        </div>
+                    </div>
                 </nav>
             </aside>
 
@@ -122,8 +128,7 @@ export default function OrdersPage() {
                                             <div className={styles.orderCardHeader}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: 'var(--space-2)' }}>
                                                     <div className={styles.tableNumber}>
-                                                        <span className={styles.tableIcon}>🍽️</span>
-                                                        Table {order.tableNumber}
+                                                        {order.tableId ? `Table ${order.tableId}` : (order.customerName || 'Delivery')}
                                                     </div>
                                                     <span className={styles.orderTime}>
                                                         {new Date(order.createdAt).toLocaleTimeString([], {
@@ -140,7 +145,7 @@ export default function OrdersPage() {
                                                     borderRadius: '4px',
                                                     display: 'inline-block'
                                                 }}>
-                                                    💳 {order.paymentMethod}
+                                                    {order.paymentMethod}
                                                 </div>
                                             </div>
 
@@ -148,9 +153,9 @@ export default function OrdersPage() {
                                                 {order.items.map(item => (
                                                     <div key={item.id} className={styles.orderItem}>
                                                         {item.quantity}x {item.menuItem.name}
-                                                        {item.selectedExtras.length > 0 && (
+                                                        {item.selectedExtras?.length > 0 && (
                                                             <span style={{ color: 'var(--text-muted)' }}>
-                                                                {' '}({item.selectedExtras.map(e => e.name).join(', ')})
+                                                                {' '}({item.selectedExtras?.map(e => e.name).join(', ')})
                                                             </span>
                                                         )}
                                                     </div>

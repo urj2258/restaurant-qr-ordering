@@ -1,0 +1,329 @@
+{
+  "menu": [
+    {
+      "id": "starter-1",
+      "name": "Chicken Samosa",
+      "description": "Crispy pastry filled with spiced minced chicken and herbs",
+      "price": 250,
+      "image": "/images/samosa.png",
+      "categoryId": "cat-starters",
+      "categoryName": "Starters",
+      "isAvailable": true,
+      "isPopular": true,
+      "extras": [
+        {
+          "id": "extra-chutney",
+          "name": "Extra Chutney",
+          "price": 50
+        },
+        {
+          "id": "extra-spicy",
+          "name": "Extra Spicy",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "starter-2",
+      "name": "Seekh Kebab",
+      "description": "Grilled minced beef kebabs with aromatic spices",
+      "price": 450,
+      "image": "/images/seekh-kebab.png",
+      "categoryId": "cat-starters",
+      "categoryName": "Starters",
+      "isAvailable": true,
+      "extras": [
+        {
+          "id": "extra-naan",
+          "name": "Extra Naan",
+          "price": 80
+        },
+        {
+          "id": "extra-raita",
+          "name": "Raita",
+          "price": 60
+        }
+      ]
+    },
+    {
+      "id": "starter-3",
+      "name": "Chicken Wings",
+      "description": "Spicy fried chicken wings with special house sauce",
+      "price": 550,
+      "image": "/images/wings.png",
+      "categoryId": "cat-starters",
+      "categoryName": "Starters",
+      "isAvailable": true,
+      "isPopular": true
+    },
+    {
+      "id": "starter-4",
+      "name": "Pakora Platter",
+      "description": "Assorted vegetable fritters with mint chutney",
+      "price": 350,
+      "image": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&h=300&fit=crop",
+      "categoryId": "cat-starters",
+      "categoryName": "Starters",
+      "isAvailable": false
+    },
+    {
+      "id": "main-1",
+      "name": "Chicken Biryani",
+      "description": "Aromatic basmati rice layered with tender chicken and spices",
+      "price": 650,
+      "image": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop",
+      "categoryId": "cat-main",
+      "categoryName": "Main Course",
+      "isAvailable": true,
+      "isPopular": true,
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "priceModifier": 0
+        },
+        {
+          "id": "large",
+          "name": "Family Size",
+          "priceModifier": 400
+        }
+      ],
+      "extras": [
+        {
+          "id": "extra-raita",
+          "name": "Raita",
+          "price": 80
+        },
+        {
+          "id": "extra-salad",
+          "name": "Fresh Salad",
+          "price": 100
+        }
+      ]
+    },
+    {
+      "id": "main-2",
+      "name": "Mutton Karahi",
+      "description": "Traditional wok-cooked mutton with tomatoes and green chilies",
+      "price": 1200,
+      "image": "https://images.unsplash.com/photo-1574653853027-5382a3d23a15?w=400&h=300&fit=crop",
+      "categoryId": "cat-main",
+      "categoryName": "Main Course",
+      "isAvailable": true,
+      "sizes": [
+        {
+          "id": "half",
+          "name": "Half",
+          "priceModifier": 0
+        },
+        {
+          "id": "full",
+          "name": "Full",
+          "priceModifier": 600
+        }
+      ]
+    },
+    {
+      "id": "main-3",
+      "name": "Butter Chicken",
+      "description": "Creamy tomato-based curry with tender chicken pieces",
+      "price": 750,
+      "image": "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400&h=300&fit=crop",
+      "categoryId": "cat-main",
+      "categoryName": "Main Course",
+      "isAvailable": true,
+      "isPopular": true
+    },
+    {
+      "id": "main-4",
+      "name": "Beef Nihari",
+      "description": "Slow-cooked beef stew with traditional spices",
+      "price": 850,
+      "image": "https://images.unsplash.com/photo-1545247181-516773cae754?w=400&h=300&fit=crop",
+      "categoryId": "cat-main",
+      "categoryName": "Main Course",
+      "isAvailable": true
+    },
+    {
+      "id": "main-5",
+      "name": "Chapli Kebab",
+      "description": "Peshawar-style beef patties with signature spices",
+      "price": 550,
+      "image": "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400&h=300&fit=crop",
+      "categoryId": "cat-main",
+      "categoryName": "Main Course",
+      "isAvailable": true
+    },
+    {
+      "id": "drink-1",
+      "name": "Mango Lassi",
+      "description": "Refreshing yogurt drink blended with fresh mango",
+      "price": 200,
+      "image": "https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400&h=300&fit=crop",
+      "categoryId": "cat-drinks",
+      "categoryName": "Drinks",
+      "isAvailable": true,
+      "isPopular": true
+    },
+    {
+      "id": "drink-2",
+      "name": "Mint Lemonade",
+      "description": "Fresh lemon juice with mint leaves and soda",
+      "price": 180,
+      "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=300&fit=crop",
+      "categoryId": "cat-drinks",
+      "categoryName": "Drinks",
+      "isAvailable": true
+    },
+    {
+      "id": "drink-3",
+      "name": "Kashmiri Chai",
+      "description": "Traditional pink tea with cardamom and nuts",
+      "price": 250,
+      "image": "https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=400&h=300&fit=crop",
+      "categoryId": "cat-drinks",
+      "categoryName": "Drinks",
+      "isAvailable": true
+    },
+    {
+      "id": "dessert-1",
+      "name": "Gulab Jamun",
+      "description": "Deep-fried milk dumplings soaked in rose syrup",
+      "price": 200,
+      "image": "https://images.unsplash.com/photo-1666190053276-439cf1885921?w=400&h=300&fit=crop",
+      "categoryId": "cat-desserts",
+      "categoryName": "Desserts",
+      "isAvailable": true,
+      "isPopular": true
+    },
+    {
+      "id": "dessert-2",
+      "name": "Kheer",
+      "description": "Creamy rice pudding with cardamom and nuts",
+      "price": 250,
+      "image": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=300&fit=crop",
+      "categoryId": "cat-desserts",
+      "categoryName": "Desserts",
+      "isAvailable": true
+    },
+    {
+      "id": "dessert-3",
+      "name": "Rasmalai",
+      "description": "Soft cheese patties in sweetened milk with saffron",
+      "price": 300,
+      "image": "https://images.unsplash.com/photo-1605260800080-20c7b9ee8fce?w=400&h=300&fit=crop",
+      "categoryId": "cat-desserts",
+      "categoryName": "Desserts",
+      "isAvailable": true
+    }
+  ],
+  "tables": [
+    {
+      "id": "table-1",
+      "name": "Table 1",
+      "seats": 2,
+      "isOccupied": false
+    },
+    {
+      "id": "table-2",
+      "name": "Table 2",
+      "seats": 2,
+      "isOccupied": false
+    },
+    {
+      "id": "table-3",
+      "name": "Table 3",
+      "seats": 2,
+      "isOccupied": false
+    },
+    {
+      "id": "table-4",
+      "name": "Table 4",
+      "seats": 2,
+      "isOccupied": false
+    },
+    {
+      "id": "table-5",
+      "name": "Table 5",
+      "seats": 2,
+      "isOccupied": false
+    },
+    {
+      "id": "table-6",
+      "name": "Table 6",
+      "seats": 4,
+      "isOccupied": false
+    },
+    {
+      "id": "table-7",
+      "name": "Table 7",
+      "seats": 4,
+      "isOccupied": false
+    },
+    {
+      "id": "table-8",
+      "name": "Table 8",
+      "seats": 4,
+      "isOccupied": false
+    },
+    {
+      "id": "table-9",
+      "name": "Table 9",
+      "seats": 4,
+      "isOccupied": false
+    },
+    {
+      "id": "table-10",
+      "name": "Table 10",
+      "seats": 4,
+      "isOccupied": false
+    },
+    {
+      "id": "table-11",
+      "name": "Table 11",
+      "seats": 6,
+      "isOccupied": false
+    },
+    {
+      "id": "table-12",
+      "name": "Table 12",
+      "seats": 6,
+      "isOccupied": false
+    },
+    {
+      "id": "table-13",
+      "name": "Table 13",
+      "seats": 6,
+      "isOccupied": false
+    },
+    {
+      "id": "table-14",
+      "name": "Table 14",
+      "seats": 6,
+      "isOccupied": false
+    },
+    {
+      "id": "table-15",
+      "name": "Table 15",
+      "seats": 6,
+      "isOccupied": false
+    }
+  ],
+  "orders": [],
+  "users": [
+    {
+      "id": "user-admin",
+      "email": "admin@neonbites.com",
+      "password": "Admin@123",
+      "name": "Admin User",
+      "role": "admin"
+    },
+    {
+      "id": "user-kitchen",
+      "email": "kitchen@neonbites.com",
+      "password": "Kitchen@123",
+      "name": "Kitchen Staff",
+      "role": "kitchen"
+    }
+  ]
+}

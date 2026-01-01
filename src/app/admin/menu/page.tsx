@@ -1,18 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MenuItem } from '@/lib/types';
-import { getMenu, saveMenu, updateMenuItem, formatPrice, initializeData } from '@/lib/storage';
-import { sampleMenuItems, sampleTables, sampleOrders, categories } from '@/lib/data';
+import { fetchMenu, updateMenuItem, deleteMenuItem, formatPrice } from '@/lib/storage';
+import ThemeToggle from '@/components/ThemeToggle';
+import BrandIcon from '@/components/BrandIcon';
 import styles from '../admin.module.css';
 
 const categoryIcons: Record<string, string> = {
-    'Starters': '🥟',
-    'Main Course': '🍛',
-    'Drinks': '🥤',
-    'Desserts': '🍮'
+    'Starters': '',
+    'Main Course': '',
+    'Drinks': '',
+    'Desserts': ''
 };
 
 export default function MenuManagementPage() {
@@ -20,32 +21,45 @@ export default function MenuManagementPage() {
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [activeCategory, setActiveCategory] = useState<string>('all');
 
+    // Derive categories from menu items
+    const categories = useMemo(() => {
+        return [...new Set(menuItems.map(item => item.categoryName))];
+    }, [menuItems]);
+
     useEffect(() => {
-        initializeData(sampleMenuItems, sampleTables, sampleOrders);
-        const menu = getMenu();
-        setMenuItems(menu.length > 0 ? menu : sampleMenuItems);
+        const loadMenu = async () => {
+            const menu = await fetchMenu();
+            setMenuItems(menu.length > 0 ? menu : []);
+        };
+        loadMenu();
     }, []);
 
-    const handleToggleAvailability = (itemId: string) => {
+    const handleToggleAvailability = async (itemId: string) => {
         const item = menuItems.find(m => m.id === itemId);
         if (item) {
-            updateMenuItem(itemId, { isAvailable: !item.isAvailable });
-            setMenuItems(menuItems.map(m =>
-                m.id === itemId ? { ...m, isAvailable: !m.isAvailable } : m
-            ));
+            // Optimistic update
+            const updatedItem = { ...item, isAvailable: !item.isAvailable };
+            setMenuItems(prev => prev.map(m => m.id === itemId ? updatedItem : m));
+
+            const success = await updateMenuItem(itemId, { isAvailable: !item.isAvailable });
+            if (!success) {
+                // Revert if failed
+                setMenuItems(prev => prev.map(m => m.id === itemId ? item : m));
+                alert('Failed to update availability');
+            }
         }
     };
 
     const filteredItems = activeCategory === 'all'
         ? menuItems
-        : menuItems.filter(item => item.category === activeCategory);
+        : menuItems.filter(item => item.categoryName === activeCategory);
 
     const navItems = [
-        { href: '/admin', label: 'Dashboard', icon: '📊' },
-        { href: '/admin/orders', label: 'Orders', icon: '📋' },
-        { href: '/admin/tables', label: 'Tables', icon: '🍽️' },
-        { href: '/admin/menu', label: 'Menu', icon: '📖' },
-        { href: '/admin/analytics', label: 'Analytics', icon: '📈' }
+        { href: '/admin', label: 'Dashboard' },
+        { href: '/admin/orders', label: 'Orders' },
+        { href: '/admin/tables', label: 'Tables' },
+        { href: '/admin/menu', label: 'Menu' },
+        { href: '/admin/analytics', label: 'Analytics' }
     ];
 
     return (
@@ -53,8 +67,10 @@ export default function MenuManagementPage() {
             {/* Sidebar */}
             <aside className={styles.sidebar}>
                 <div className={styles.logo}>
-                    <div className={styles.logoIcon}>⚡</div>
-                    <span className={styles.logoText}>Neon Bites</span>
+                    <div className={styles.logoIcon}>
+                        <BrandIcon size={24} color="var(--accent-primary)" />
+                    </div>
+                    <span className={styles.logoText}>Abbottabad Eats</span>
                 </div>
 
                 <nav className={styles.navSection}>
@@ -65,10 +81,15 @@ export default function MenuManagementPage() {
                             href={item.href}
                             className={`${styles.navItem} ${pathname === item.href ? styles.active : ''}`}
                         >
-                            <span className={styles.navIcon}>{item.icon}</span>
                             <span>{item.label}</span>
                         </Link>
                     ))}
+                    <div className={styles.navItem} style={{ marginTop: 'auto', padding: '0 1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                            <span>Theme</span>
+                            <ThemeToggle />
+                        </div>
+                    </div>
                 </nav>
             </aside>
 
@@ -103,7 +124,7 @@ export default function MenuManagementPage() {
                             className={`btn ${activeCategory === category ? 'btn-primary' : 'btn-secondary'}`}
                             onClick={() => setActiveCategory(category)}
                         >
-                            {categoryIcons[category]} {category}
+                            {category}
                         </button>
                     ))}
                 </div>
@@ -112,8 +133,7 @@ export default function MenuManagementPage() {
                 <div className={styles.menuList}>
                     {filteredItems.map(item => (
                         <div key={item.id} className={styles.menuRow}>
-                            <div className={styles.menuRowImage}>
-                                {categoryIcons[item.category]}
+                            <div className={styles.menuRowImage} style={{ background: 'var(--bg-tertiary)' }}>
                             </div>
                             <div className={styles.menuRowInfo}>
                                 <div className={styles.menuRowName}>
@@ -124,7 +144,7 @@ export default function MenuManagementPage() {
                                         </span>
                                     )}
                                 </div>
-                                <div className={styles.menuRowCategory}>{item.category}</div>
+                                <div className={styles.menuRowCategory}>{item.categoryName}</div>
                             </div>
                             <div className={styles.menuRowPrice}>{formatPrice(item.price)}</div>
                             <div className={styles.menuRowActions}>
@@ -138,8 +158,24 @@ export default function MenuManagementPage() {
                                 <button
                                     className={`${styles.toggle} ${item.isAvailable ? styles.active : ''}`}
                                     onClick={() => handleToggleAvailability(item.id)}
-                                    aria-label={item.isAvailable ? 'Mark as unavailable' : 'Mark as available'}
+                                    title={item.isAvailable ? 'Mark as unavailable' : 'Mark as available'}
                                 />
+                                <button
+                                    className="btn btn-sm btn-ghost"
+                                    style={{ color: 'var(--danger)', marginLeft: 'var(--space-2)' }}
+                                    onClick={async () => {
+                                        if (confirm(`Delete ${item.name}?`)) {
+                                            const success = await deleteMenuItem(item.id);
+                                            if (success) {
+                                                setMenuItems(prev => prev.filter(m => m.id !== item.id));
+                                            } else {
+                                                alert('Failed to delete item');
+                                            }
+                                        }
+                                    }}
+                                >
+                                    Delete
+                                </button>
                             </div>
                         </div>
                     ))}

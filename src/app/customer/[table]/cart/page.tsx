@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CartProvider, useCart } from '@/context/CartContext';
-import { formatPrice, addOrder, generateId } from '@/lib/storage';
+import { formatPrice } from '@/lib/storage';
 import { Order } from '@/lib/types';
+import { CartIcon, TrashIcon } from '@/components/Icons';
 
 function CartContent() {
     const params = useParams();
     const router = useRouter();
-    const tableNumber = parseInt(params.table as string) || 1;
+    const tableId = params.table as string;
     const { items, removeItem, updateQuantity, getTotals, clearCart } = useCart();
     const [isPlacing, setIsPlacing] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
@@ -19,7 +20,7 @@ function CartContent() {
 
     const handlePlaceOrder = () => {
         if (items.length === 0) return;
-        router.push(`/customer/${tableNumber}/checkout`);
+        router.push(`/customer/${tableId}/checkout`);
     };
 
     if (orderPlaced) {
@@ -67,14 +68,14 @@ function CartContent() {
                     <div style={{ display: 'flex', gap: 'var(--space-3)', flexDirection: 'column' }}>
                         <button
                             className="btn btn-primary btn-lg"
-                            onClick={() => router.push(`/customer/${tableNumber}/tracking/${orderId}`)}
+                            onClick={() => router.push(`/customer/${tableId}/tracking/${orderId}`)}
                             style={{ width: '100%' }}
                         >
                             Track Order
                         </button>
                         <button
                             className="btn btn-secondary"
-                            onClick={() => router.push(`/customer/${tableNumber}`)}
+                            onClick={() => router.push(`/customer/${tableId}`)}
                             style={{ width: '100%' }}
                         >
                             Order More
@@ -108,7 +109,7 @@ function CartContent() {
                     <div>
                         <h1 style={{ fontSize: 'var(--font-size-xl)' }}>Your Order</h1>
                         <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
-                            Table #{tableNumber}
+                            Table {tableId?.substring(0, 4)}..
                         </p>
                     </div>
                 </div>
@@ -119,11 +120,11 @@ function CartContent() {
                         padding: 'var(--space-12)',
                         color: 'var(--text-muted)'
                     }}>
-                        <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)' }}>🛒</div>
+                        <div style={{ marginBottom: 'var(--space-4)', color: 'var(--text-muted)' }}><CartIcon size={48} /></div>
                         <p>Your cart is empty</p>
                         <button
                             className="btn btn-primary"
-                            onClick={() => router.push(`/customer/${tableNumber}`)}
+                            onClick={() => router.push(`/customer/${tableId}`)}
                             style={{ marginTop: 'var(--space-4)' }}
                         >
                             Browse Menu
@@ -145,6 +146,7 @@ function CartContent() {
                                         marginBottom: 'var(--space-3)'
                                     }}
                                 >
+                                    {/* ... existing cart item display ... */}
                                     <div style={{
                                         width: '80px',
                                         height: '80px',
@@ -156,7 +158,7 @@ function CartContent() {
                                         fontSize: '32px',
                                         flexShrink: 0
                                     }}>
-                                        🍽️
+
                                     </div>
                                     <div style={{ flex: 1 }}>
                                         <div style={{
@@ -225,7 +227,7 @@ function CartContent() {
                                                     color: 'var(--danger)'
                                                 }}
                                             >
-                                                🗑️
+                                                <TrashIcon size={16} />
                                             </button>
                                         </div>
                                     </div>
@@ -315,10 +317,10 @@ function CartContent() {
 
 export default function CartPage() {
     const params = useParams();
-    const tableNumber = parseInt(params.table as string) || 1;
+    const tableId = params.table as string;
 
     return (
-        <CartProvider tableNumber={tableNumber}>
+        <CartProvider tableNumber={tableId}>
             <CartContent />
         </CartProvider>
     );

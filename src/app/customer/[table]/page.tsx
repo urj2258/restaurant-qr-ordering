@@ -4,24 +4,26 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CartProvider, useCart } from '@/context/CartContext';
 import { MenuItem, Extra, Size } from '@/lib/types';
-import { sampleMenuItems, categories } from '@/lib/data';
-import { getMenu, saveMenu, formatPrice, initializeData } from '@/lib/storage';
-import { sampleMenuItems as initialMenu, sampleTables, sampleOrders } from '@/lib/data';
+import { fetchMenu, formatPrice } from '@/lib/storage';
+import BrandIcon from '@/components/BrandIcon';
+import ThemeToggle from '@/components/ThemeToggle';
+import { SearchIcon as SearchSvg, CartIcon as CartSvg, TrashIcon as TrashSvg } from '@/components/Icons';
 import styles from './menu.module.css';
+import Image from 'next/image';
+import { memo } from 'react';
 
 // Icons as simple components
-const ZapIcon = () => <span>⚡</span>;
-const SearchIcon = () => <span>🔍</span>;
-const TableIcon = () => <span>🍽️</span>;
-const StartersIcon = () => <span>🥟</span>;
-const MainCourseIcon = () => <span>🍛</span>;
-const DrinksIcon = () => <span>🥤</span>;
-const DessertsIcon = () => <span>🍮</span>;
-const AlertIcon = () => <span>⚠️</span>;
+const SearchIcon = () => <SearchSvg size={16} color="var(--text-muted)" />;
+const TableIcon = () => <span></span>;
+const StartersIcon = () => <span></span>;
+const MainCourseIcon = () => <span></span>;
+const DrinksIcon = () => <span></span>;
+const DessertsIcon = () => <span></span>;
+const AlertIcon = () => <span style={{ fontWeight: 600, color: 'var(--warning)' }}>!</span>;
 const PlusIcon = () => <span>+</span>;
 const MinusIcon = () => <span>−</span>;
-const TrashIcon = () => <span>🗑️</span>;
-const CartIcon = () => <span>🛒</span>;
+const TrashIconComponent = () => <TrashSvg size={16} />;
+const CartIconComponent = () => <CartSvg size={20} />;
 const ArrowRightIcon = () => <span>→</span>;
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -31,29 +33,50 @@ const categoryIcons: Record<string, React.ReactNode> = {
     'Desserts': <DessertsIcon />
 };
 
+// Main Page Component with Provider
 function MenuContent() {
     const params = useParams();
     const router = useRouter();
-    const tableNumber = parseInt(params.table as string) || 1;
+    // Use the raw string ID from parameters
+    const tableId = params.table as string;
+
+    // We can fetch table details here eventually to show "Table TableName" 
+    // instead of ID, but for now ID is fine for internal logic.
+    // Display might need to be cleaner than just showing a raw UUID.
+
     const { items: cartItems, addItem, removeItem, updateQuantity, getTotals, getItemCount } = useCart();
 
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-    const [activeCategory, setActiveCategory] = useState<string>(categories[0]);
+    const [activeCategory, setActiveCategory] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [showMobileCart, setShowMobileCart] = useState(false);
 
+    // Derive categories from menu items
+    const categories = useMemo(() => {
+        const cats = [...new Set(menuItems.map(item => item.categoryName))];
+        return cats.length > 0 ? cats : ['Starters', 'Main Course', 'Drinks', 'Desserts'];
+    }, [menuItems]);
+
     useEffect(() => {
-        // Initialize data
-        initializeData(initialMenu, sampleTables, sampleOrders);
-        const menu = getMenu();
-        setMenuItems(menu.length > 0 ? menu : sampleMenuItems);
+        const loadMenu = async () => {
+            const menu = await fetchMenu();
+            setMenuItems(menu.length > 0 ? menu : []);
+        };
+        loadMenu();
     }, []);
+
+    // Set initial category when categories load
+    useEffect(() => {
+        if (categories.length > 0 && !activeCategory) {
+            setActiveCategory(categories[0]);
+        }
+    }, [categories, activeCategory]);
 
     const filteredItems = useMemo(() => {
         return menuItems.filter(item => {
-            const matchesCategory = item.category === activeCategory;
+            const matchesCategory = item.categoryName === activeCategory;
             const matchesSearch = searchQuery === '' ||
                 item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -73,10 +96,19 @@ function MenuContent() {
     };
 
     const handleCheckout = () => {
-        router.push(`/customer/${tableNumber}/checkout`);
+        router.push(`/customer/${tableId}/checkout`);
     };
 
     const totals = getTotals();
+
+    // Group items by category for efficient rendering
+    const itemsByCategory = useMemo(() => {
+        const groups: Record<string, MenuItem[]> = {};
+        categories.forEach(cat => {
+            groups[cat] = filteredItems.filter(item => item.categoryName === cat);
+        });
+        return groups;
+    }, [filteredItems, categories]);
     const itemCount = getItemCount();
 
     return (
@@ -84,11 +116,13 @@ function MenuContent() {
             {/* Header */}
             <header className={styles.header}>
                 <div className={styles.logo}>
-                    <div className={styles.logoIcon}><ZapIcon /></div>
-                    <span>Neon Bites</span>
+                    <div className={styles.logoIcon}>
+                        <BrandIcon size={20} />
+                    </div>
+                    <span>Abbottabad Eats</span>
                 </div>
 
-                <div className={styles.searchBar}>
+                <div className={`${styles.searchBar} ${styles.desktopSearch}`}>
                     <span className={styles.searchIcon}><SearchIcon /></span>
                     <input
                         type="text"
@@ -100,13 +134,22 @@ function MenuContent() {
                 </div>
 
                 <div className={styles.headerRight}>
-                    <div className={styles.tableIndicator}>
-                        <TableIcon />
-                        <span>Table #{tableNumber}</span>
-                    </div>
+                    <ThemeToggle />
                     <div className={styles.avatar}>G</div>
                 </div>
             </header>
+
+            {/* Mobile Search - Visible only on mobile */}
+            <div className={`${styles.searchBar} ${styles.mobileSearch}`}>
+                <span className={styles.searchIcon}><SearchIcon /></span>
+                <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder="Search for dishes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
 
             {/* Sidebar */}
             <aside className={styles.sidebar}>
@@ -137,10 +180,10 @@ function MenuContent() {
                 {/* Hero Banner */}
                 <div className={styles.heroBanner}>
                     <div className={styles.heroBannerContent}>
-                        <span className={styles.heroBannerLabel}>Seasonal Special</span>
-                        <h1 className={styles.heroBannerTitle}>Welcome to Neon Bites</h1>
+                        <span className={styles.heroBannerLabel}>Freshly Served</span>
+                        <h1 className={styles.heroBannerTitle}>Welcome to Abbottabad Eats</h1>
                         <p className={styles.heroBannerText}>
-                            Experience the fusion of future tech and ancient flavors. Order directly from your table.
+                            Experience the finest flavors and professional service. Order directly from your table.
                         </p>
                     </div>
                 </div>
@@ -154,47 +197,13 @@ function MenuContent() {
                     >
                         <h2 className={styles.sectionTitle}>{category}</h2>
                         <div className={styles.menuGrid}>
-                            {filteredItems
-                                .filter(item => item.category === category)
-                                .map(item => (
-                                    <div key={item.id} className={styles.menuCard}>
-                                        <div className={styles.menuCardImage}>
-                                            <img
-                                                src={item.image}
-                                                alt={item.name}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'cover'
-                                                }}
-                                            />
-                                            {item.isPopular && (
-                                                <span className={styles.popularBadge}>Popular</span>
-                                            )}
-                                            {!item.isAvailable && (
-                                                <div className={styles.soldOutOverlay}>
-                                                    <span className={styles.soldOutBadge}>SOLD OUT</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className={styles.menuCardBody}>
-                                            <div className={styles.menuCardHeader}>
-                                                <h3 className={styles.menuCardName}>{item.name}</h3>
-                                                <span className={styles.menuCardPrice}>{formatPrice(item.price)}</span>
-                                            </div>
-                                            <p className={styles.menuCardDesc}>{item.description}</p>
-                                            <div className={styles.menuCardActions}>
-                                                <button
-                                                    className={styles.addButton}
-                                                    onClick={() => handleAddToCart(item)}
-                                                    disabled={!item.isAvailable}
-                                                >
-                                                    <PlusIcon /> Add
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                            {itemsByCategory[category]?.map(item => (
+                                <MenuCard
+                                    key={item.id}
+                                    item={item}
+                                    onAdd={handleAddToCart}
+                                />
+                            ))}
                         </div>
                     </section>
                 ))}
@@ -221,7 +230,7 @@ function MenuContent() {
                 <div className={styles.cartItems}>
                     {cartItems.length === 0 ? (
                         <div className={styles.cartEmpty}>
-                            <div className={styles.cartEmptyIcon}><CartIcon /></div>
+                            <div className={styles.cartEmptyIcon}><CartIconComponent /></div>
                             <p>Your cart is empty</p>
                             <p>Add items from the menu to get started</p>
                         </div>
@@ -275,7 +284,7 @@ function MenuContent() {
                                         className={styles.removeBtn}
                                         onClick={() => removeItem(item.id)}
                                     >
-                                        <TrashIcon />
+                                        <TrashIconComponent />
                                     </button>
                                 </div>
                             </div>
@@ -314,20 +323,23 @@ function MenuContent() {
                 <button
                     className={styles.mobileCartBtn}
                     onClick={() => setShowMobileCart(true)}
-                    style={{ display: 'none' }}
                 >
-                    <CartIcon /> View Cart ({itemCount})
+                    <div className={styles.mobileCartInfo}>
+                        <div className={styles.mobileCartBadge}>{itemCount}</div>
+                        <span className={styles.mobileCartViewText}>View Cart</span>
+                    </div>
+                    <div className={styles.mobileCartTotal}>
+                        {formatPrice(totals.total)}
+                    </div>
                 </button>
             )}
 
             <style jsx>{`
-                @media (min-width: 1201px) {
-                    .${styles.mobileCartBtn} {
-                        display: none !important;
-                    }
-                }
                 @media (max-width: 1200px) {
                     .${styles.mobileCartBtn} {
+                        display: flex !important;
+                    }
+                    .${styles.mobileAddBtn} {
                         display: flex !important;
                     }
                 }
@@ -351,6 +363,67 @@ function MenuContent() {
         </div>
     );
 }
+
+// Memoized Menu Card for performance
+const MenuCard = memo(({
+    item,
+    onAdd
+}: {
+    item: MenuItem;
+    onAdd: (item: MenuItem) => void;
+}) => {
+    return (
+        <div key={item.id} className={styles.menuCard}>
+            <div className={styles.menuCardImage}>
+                <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    style={{
+                        objectFit: 'cover'
+                    }}
+                    loading="lazy"
+                />
+                {item.isPopular && (
+                    <span className={styles.popularBadge}>Popular</span>
+                )}
+                {!item.isAvailable && (
+                    <div className={styles.soldOutOverlay}>
+                        <span className={styles.soldOutBadge}>SOLD OUT</span>
+                    </div>
+                )}
+                {item.isAvailable && (
+                    <button
+                        className={styles.mobileAddBtn}
+                        onClick={() => onAdd(item)}
+                        style={{ display: 'none' }} /* Visible only via media query */
+                    >
+                        +
+                    </button>
+                )}
+            </div>
+            <div className={styles.menuCardBody}>
+                <div className={styles.menuCardHeader}>
+                    <h3 className={styles.menuCardName}>{item.name}</h3>
+                    <span className={styles.menuCardPrice}>{formatPrice(item.price)}</span>
+                </div>
+                <p className={styles.menuCardDesc}>{item.description}</p>
+                <div className={styles.menuCardActions}>
+                    <button
+                        className={styles.addButton}
+                        onClick={() => onAdd(item)}
+                        disabled={!item.isAvailable}
+                    >
+                        <PlusIcon /> Add
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+});
+
+MenuCard.displayName = 'MenuCard';
 
 // Item Customization Modal Component
 function ItemCustomizationModal({
@@ -486,10 +559,10 @@ function ItemCustomizationModal({
 // Main Page Component with Provider
 export default function MenuPage() {
     const params = useParams();
-    const tableNumber = parseInt(params.table as string) || 1;
+    const tableId = params.table as string;
 
     return (
-        <CartProvider tableNumber={tableNumber}>
+        <CartProvider tableNumber={tableId}>
             <MenuContent />
         </CartProvider>
     );

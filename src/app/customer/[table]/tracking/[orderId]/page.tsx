@@ -6,11 +6,11 @@ import { fetchOrder, formatPrice } from '@/lib/storage';
 import { Order, OrderStatus } from '@/lib/types';
 
 const statusSteps: { status: OrderStatus; label: string; icon: string }[] = [
-    { status: 'pending', label: 'Order Placed', icon: '📝' },
-    { status: 'accepted', label: 'Accepted', icon: '✓' },
-    { status: 'preparing', label: 'Preparing', icon: '👨‍🍳' },
-    { status: 'ready', label: 'Ready', icon: '🔔' },
-    { status: 'served', label: 'Served', icon: '🍽️' }
+    { status: 'pending', label: 'Order Placed', icon: '1' },
+    { status: 'accepted', label: 'Accepted', icon: '2' },
+    { status: 'preparing', label: 'Preparing', icon: '3' },
+    { status: 'ready', label: 'Ready', icon: '4' },
+    { status: 'served', label: 'Served', icon: '5' }
 ];
 
 const getStatusIndex = (status: OrderStatus): number => {
@@ -20,7 +20,7 @@ const getStatusIndex = (status: OrderStatus): number => {
 export default function TrackingPage() {
     const params = useParams();
     const router = useRouter();
-    const tableNumber = parseInt(params.table as string) || 1;
+    const tableId = params.table as string;
     const orderId = params.orderId as string;
 
     const [order, setOrder] = useState<Order | null>(null);
@@ -68,14 +68,14 @@ export default function TrackingPage() {
                 padding: 'var(--space-4)'
             }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)' }}>❓</div>
+                    <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)' }}>?</div>
                     <h2 style={{ marginBottom: 'var(--space-2)' }}>Order Not Found</h2>
                     <p style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-4)' }}>
                         We couldn&apos;t find this order.
                     </p>
                     <button
                         className="btn btn-primary"
-                        onClick={() => router.push(`/customer/${tableNumber}`)}
+                        onClick={() => router.push(`/customer/${tableId}`)}
                     >
                         Back to Menu
                     </button>
@@ -102,7 +102,7 @@ export default function TrackingPage() {
                 }}>
                     <button
                         className="btn btn-icon btn-secondary"
-                        onClick={() => router.push(`/customer/${tableNumber}`)}
+                        onClick={() => router.push(`/customer/${tableId}`)}
                     >
                         ←
                     </button>
@@ -244,17 +244,17 @@ export default function TrackingPage() {
                             marginBottom: 'var(--space-2)',
                             color: 'var(--text-secondary)'
                         }}>
-                            <span>Subtotal</span>
-                            <span>{formatPrice(order.subtotal)}</span>
+                            <span>Items ({order.items.length})</span>
+                            <span>{formatPrice(order.subtotal || 0)}</span>
                         </div>
                         <div style={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            marginBottom: 'var(--space-3)',
+                            marginBottom: 'var(--space-4)',
                             color: 'var(--text-secondary)'
                         }}>
-                            <span>Tax</span>
-                            <span>{formatPrice(order.tax)}</span>
+                            <span>Tax (16%)</span>
+                            <span>{formatPrice(order.tax || 0)}</span>
                         </div>
                         <div style={{
                             display: 'flex',

@@ -9,7 +9,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Crispy pastry filled with spiced minced chicken and herbs',
         price: 250,
         image: '/images/samosa.png',
-        category: 'Starters',
+        categoryId: 'cat-starters',
+        categoryName: 'Starters',
         isAvailable: true,
         isPopular: true,
         extras: [
@@ -23,7 +24,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Grilled minced beef kebabs with aromatic spices',
         price: 450,
         image: '/images/seekh-kebab.png',
-        category: 'Starters',
+        categoryId: 'cat-starters',
+        categoryName: 'Starters',
         isAvailable: true,
         extras: [
             { id: 'extra-naan', name: 'Extra Naan', price: 80 },
@@ -36,7 +38,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Spicy fried chicken wings with special house sauce',
         price: 550,
         image: '/images/wings.png',
-        category: 'Starters',
+        categoryId: 'cat-starters',
+        categoryName: 'Starters',
         isAvailable: true,
         isPopular: true
     },
@@ -46,7 +49,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Assorted vegetable fritters with mint chutney',
         price: 350,
         image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&h=300&fit=crop',
-        category: 'Starters',
+        categoryId: 'cat-starters',
+        categoryName: 'Starters',
         isAvailable: false
     },
 
@@ -57,7 +61,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Aromatic basmati rice layered with tender chicken and spices',
         price: 650,
         image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop',
-        category: 'Main Course',
+        categoryId: 'cat-main',
+        categoryName: 'Main Course',
         isAvailable: true,
         isPopular: true,
         sizes: [
@@ -75,7 +80,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Traditional wok-cooked mutton with tomatoes and green chilies',
         price: 1200,
         image: 'https://images.unsplash.com/photo-1574653853027-5382a3d23a15?w=400&h=300&fit=crop',
-        category: 'Main Course',
+        categoryId: 'cat-main',
+        categoryName: 'Main Course',
         isAvailable: true,
         sizes: [
             { id: 'half', name: 'Half', priceModifier: 0 },
@@ -88,7 +94,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Creamy tomato-based curry with tender chicken pieces',
         price: 750,
         image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400&h=300&fit=crop',
-        category: 'Main Course',
+        categoryId: 'cat-main',
+        categoryName: 'Main Course',
         isAvailable: true,
         isPopular: true
     },
@@ -98,7 +105,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Slow-cooked beef stew with traditional spices',
         price: 850,
         image: 'https://images.unsplash.com/photo-1545247181-516773cae754?w=400&h=300&fit=crop',
-        category: 'Main Course',
+        categoryId: 'cat-main',
+        categoryName: 'Main Course',
         isAvailable: true
     },
     {
@@ -107,7 +115,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Peshawar-style beef patties with signature spices',
         price: 550,
         image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400&h=300&fit=crop',
-        category: 'Main Course',
+        categoryId: 'cat-main',
+        categoryName: 'Main Course',
         isAvailable: true
     },
 
@@ -118,7 +127,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Refreshing yogurt drink blended with fresh mango',
         price: 200,
         image: 'https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=400&h=300&fit=crop',
-        category: 'Drinks',
+        categoryId: 'cat-drinks',
+        categoryName: 'Drinks',
         isAvailable: true,
         isPopular: true
     },
@@ -128,7 +138,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Fresh lemon juice with mint leaves and soda',
         price: 180,
         image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=300&fit=crop',
-        category: 'Drinks',
+        categoryId: 'cat-drinks',
+        categoryName: 'Drinks',
         isAvailable: true
     },
     {
@@ -137,7 +148,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Traditional pink tea with cardamom and nuts',
         price: 250,
         image: 'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=400&h=300&fit=crop',
-        category: 'Drinks',
+        categoryId: 'cat-drinks',
+        categoryName: 'Drinks',
         isAvailable: true
     },
 
@@ -148,7 +160,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Deep-fried milk dumplings soaked in rose syrup',
         price: 200,
         image: 'https://images.unsplash.com/photo-1666190053276-439cf1885921?w=400&h=300&fit=crop',
-        category: 'Desserts',
+        categoryId: 'cat-desserts',
+        categoryName: 'Desserts',
         isAvailable: true,
         isPopular: true
     },
@@ -158,7 +171,8 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Creamy rice pudding with cardamom and nuts',
         price: 250,
         image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=300&fit=crop',
-        category: 'Desserts',
+        categoryId: 'cat-desserts',
+        categoryName: 'Desserts',
         isAvailable: true
     },
     {
@@ -167,27 +181,28 @@ export const sampleMenuItems: MenuItem[] = [
         description: 'Soft cheese patties in sweetened milk with saffron',
         price: 300,
         image: 'https://images.unsplash.com/photo-1605260800080-20c7b9ee8fce?w=400&h=300&fit=crop',
-        category: 'Desserts',
+        categoryId: 'cat-desserts',
+        categoryName: 'Desserts',
         isAvailable: true
     }
 ];
 
 // Sample Tables
 export const sampleTables: Table[] = Array.from({ length: 15 }, (_, i) => ({
-    id: i + 1,
+    id: `table-${i + 1}`,
     name: `Table ${i + 1}`,
     seats: i < 5 ? 2 : i < 10 ? 4 : 6,
     isOccupied: false
 }));
 
 // Get unique categories
-export const categories = [...new Set(sampleMenuItems.map(item => item.category))];
+export const categories = [...new Set(sampleMenuItems.map(item => item.categoryName))];
 
 // Sample Orders for Demo
 export const sampleOrders: Order[] = [
     {
         id: 'order-001',
-        tableNumber: 5,
+        tableId: 'table-5',
         items: [
             {
                 id: 'cart-1',
@@ -212,7 +227,7 @@ export const sampleOrders: Order[] = [
     },
     {
         id: 'order-002',
-        tableNumber: 12,
+        tableId: 'table-12',
         items: [
             {
                 id: 'cart-3',

@@ -1,3 +1,12 @@
+// Category Types
+export interface Category {
+  id: string;
+  name: string;
+  image?: string;
+  description?: string;
+  displayOrder: number;
+}
+
 // Menu Item Types
 export interface MenuItem {
   id: string;
@@ -5,7 +14,8 @@ export interface MenuItem {
   description: string;
   price: number;
   image: string;
-  category: string;
+  categoryId: string;
+  categoryName: string; // Denormalized for easier display
   isAvailable: boolean;
   isPopular?: boolean;
   extras?: Extra[];
@@ -24,6 +34,18 @@ export interface Size {
   priceModifier: number;
 }
 
+// User Types
+export type UserRole = 'admin' | 'kitchen' | 'staff';
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  name: string;
+  role: UserRole;
+}
+
+// Cart Types
+
 // Cart Types
 export interface CartItem {
   id: string;
@@ -38,25 +60,39 @@ export interface CartItem {
 export type OrderStatus = 'pending' | 'accepted' | 'preparing' | 'ready' | 'served' | 'cancelled';
 
 // Payment Types
-export type PaymentMethod = 'EasyPaisa' | 'JazzCash' | 'Bank Transfer' | 'Cash on Delivery';
+// Payment Types
+export type PaymentMethod = 'EasyPaisa' | 'JazzCash' | 'Bank Transfer' | 'Cash on Delivery' | 'COD' | 'Easypaisa' | 'BankTransfer' | 'Digital';
 
 export interface Order {
   id: string;
-  tableNumber: number;
+  customerId?: string;
+  tableId?: string; // Optional for delivery/pickup
+  customerName?: string; // For delivery
+  phone?: string;
+  address?: string;
+  city?: string;
+  streetAddress?: string;
   items: CartItem[];
   status: OrderStatus;
   paymentMethod: PaymentMethod;
   createdAt: string;
   updatedAt: string;
-  subtotal: number;
-  tax: number;
-  total: number;
+  subtotal?: number; // Mobile has totalPrice, Web has subtotal/tax/total. make optional or align logic
+  tax?: number;
+  total: number; // Mobile uses totalPrice, map to this
   specialInstructions?: string;
+  feedback?: {
+    rating: number;
+    comment: string;
+    createdAt: string;
+  };
+  latitude?: number;
+  longitude?: number;
 }
 
 // Table Types
 export interface Table {
-  id: number;
+  id: string; // Changed from number to string for UUID
   name: string;
   seats: number;
   isOccupied: boolean;
@@ -77,6 +113,6 @@ export interface PopularItem {
 }
 
 export interface TableStats {
-  tableId: number;
+  tableId: string;
   orderCount: number;
 }

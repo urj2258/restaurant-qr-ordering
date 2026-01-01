@@ -1,0 +1,134 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.card {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    color: var(--accent-primary);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.inputGroup label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.inputGroup input {
+    padding: 0.75rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    width: 100%;
+}
+
+.passwordWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.passwordWrapper input {
+    padding-right: 3rem;
+}
+
+.eyeButton {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.eyeButton:hover {
+    color: var(--accent-primary);
+}
+
+.button {
+    background: var(--accent-primary);
+    color: #fff;
+    padding: 0.75rem;
+    border-radius: var(--radius-lg);
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.button:hover {
+    background: var(--accent-primary-hover);
+    box-shadow: var(--shadow-glow);
+}
+
+.button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.error {
+    background: rgba(255, 0, 0, 0.1);
+    color: #ff4444;
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.success {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--accent-primary);
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.linkButton {
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: center;
+    transition: color 0.2s;
+}
+
+.linkButton:hover {
+    color: var(--accent-primary);
+}
