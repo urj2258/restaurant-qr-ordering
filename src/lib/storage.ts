@@ -199,6 +199,9 @@ export function generateId(): string {
 
 // Format price in PKR
 export function formatPrice(price: number): string {
+    if (price === undefined || price === null || isNaN(price)) {
+        return 'Rs. 0';
+    }
     return `Rs. ${price.toLocaleString()}`;
 }
 

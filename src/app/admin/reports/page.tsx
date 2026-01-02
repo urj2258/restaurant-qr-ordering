@@ -98,7 +98,7 @@ export default function ReportsPage() {
                         <div className={styles.statsGrid}>
                             <div className={styles.statCard}>
                                 <div className={styles.statLabel}>Total Revenue</div>
-                                <div className={styles.statValue}>Rs. {stats.totalRevenue.toLocaleString()}</div>
+                                <div className={styles.statValue}>Rs. {(stats.totalRevenue || 0).toLocaleString()}</div>
                             </div>
                             <div className={styles.statCard}>
                                 <div className={styles.statLabel}>Total Orders</div>
@@ -106,7 +106,7 @@ export default function ReportsPage() {
                             </div>
                             <div className={styles.statCard}>
                                 <div className={styles.statLabel}>Avg. Order Value</div>
-                                <div className={styles.statValue}>Rs. {Math.round(stats.avgOrderValue).toLocaleString()}</div>
+                                <div className={styles.statValue}>Rs. {Math.round(stats.avgOrderValue || 0).toLocaleString()}</div>
                             </div>
                         </div>
 
@@ -126,7 +126,7 @@ export default function ReportsPage() {
                                         <tr key={idx}>
                                             <td>{item.name}</td>
                                             <td>{item.count}</td>
-                                            <td>Rs. {item.revenue.toLocaleString()}</td>
+                                            <td>Rs. {(item.revenue || 0).toLocaleString()}</td>
                                         </tr>
                                     ))}
                                 </tbody>

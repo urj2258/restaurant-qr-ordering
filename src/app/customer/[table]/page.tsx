@@ -237,16 +237,26 @@ function MenuContent() {
                     ) : (
                         cartItems.map(item => (
                             <div key={item.id} className={styles.cartItem}>
-                                <img
-                                    src={item.menuItem.image}
-                                    alt={item.menuItem.name}
+                                <div
                                     className={styles.cartItemImage}
                                     style={{
-                                        objectFit: 'cover'
+                                        backgroundImage: `url(${item.menuItem.image})`,
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center'
                                     }}
                                 />
                                 <div className={styles.cartItemInfo}>
-                                    <div className={styles.cartItemName}>{item.menuItem.name}</div>
+                                    <div className={styles.cartItemHeader}>
+                                        <div className={styles.cartItemName}>{item.menuItem.name}</div>
+                                        <div className={styles.cartItemPriceValue}>
+                                            {formatPrice(
+                                                (item.menuItem.price +
+                                                    (item.selectedSize?.priceModifier || 0) +
+                                                    item.selectedExtras.reduce((s, e) => s + e.price, 0)
+                                                ) * item.quantity
+                                            )}
+                                        </div>
+                                    </div>
                                     {(item.selectedExtras.length > 0 || item.selectedSize) && (
                                         <div className={styles.cartItemExtras}>
                                             {item.selectedSize && item.selectedSize.name}
@@ -269,23 +279,13 @@ function MenuContent() {
                                                 <PlusIcon />
                                             </button>
                                         </div>
+                                        <button
+                                            className={styles.removeBtn}
+                                            onClick={() => removeItem(item.id)}
+                                        >
+                                            <TrashIconComponent />
+                                        </button>
                                     </div>
-                                </div>
-                                <div className={styles.cartItemPrice}>
-                                    <div className={styles.cartItemPriceValue}>
-                                        {formatPrice(
-                                            (item.menuItem.price +
-                                                (item.selectedSize?.priceModifier || 0) +
-                                                item.selectedExtras.reduce((s, e) => s + e.price, 0)
-                                            ) * item.quantity
-                                        )}
-                                    </div>
-                                    <button
-                                        className={styles.removeBtn}
-                                        onClick={() => removeItem(item.id)}
-                                    >
-                                        <TrashIconComponent />
-                                    </button>
                                 </div>
                             </div>
                         ))
