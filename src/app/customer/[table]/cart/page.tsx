@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CartProvider, useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/storage';
-import { Order } from '@/lib/types';
 import { CartIcon, TrashIcon } from '@/components/Icons';
 
 function CartContent() {
     const params = useParams();
     const router = useRouter();
     const tableId = params.table as string;
-    const { items, removeItem, updateQuantity, getTotals, clearCart } = useCart();
+    const { items, removeItem, updateQuantity, getTotals, clearCart, isLoaded } = useCart();
     const [isPlacing, setIsPlacing] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [orderId, setOrderId] = useState<string>('');
@@ -22,6 +21,28 @@ function CartContent() {
         if (items.length === 0) return;
         router.push(`/customer/${tableId}/checkout`);
     };
+
+    // Show loading state while cart is being loaded
+    if (!isLoaded) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--bg-primary)'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div className="animate-pulse" style={{
+                        fontSize: 'var(--font-size-lg)',
+                        color: 'var(--text-muted)'
+                    }}>
+                        Loading cart...
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (orderPlaced) {
         return (
@@ -146,19 +167,13 @@ function CartContent() {
                                         marginBottom: 'var(--space-3)'
                                     }}
                                 >
-                                    {/* ... existing cart item display ... */}
                                     <div style={{
                                         width: '80px',
                                         height: '80px',
-                                        background: 'var(--bg-tertiary)',
+                                        background: `url(${item.menuItem.image}) center/cover no-repeat`,
                                         borderRadius: 'var(--radius-md)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '32px',
                                         flexShrink: 0
                                     }}>
-
                                     </div>
                                     <div style={{ flex: 1 }}>
                                         <div style={{

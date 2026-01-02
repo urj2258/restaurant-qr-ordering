@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useCart } from '@/context/CartContext';
+import { CartProvider, useCart } from '@/context/CartContext';
 import { formatPrice, createOrder, generateId } from '@/lib/storage';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Order, PaymentMethod } from '@/lib/types';
@@ -14,11 +14,11 @@ const paymentMethods: { id: PaymentMethod; label: string; icon: string }[] = [
     { id: 'Cash on Delivery', label: 'Cash on Delivery', icon: '' }
 ];
 
-export default function CheckoutPage() {
+function CheckoutContent() {
     const params = useParams();
     const router = useRouter();
     const tableId = params.table as string;
-    const { items, getTotals, clearCart } = useCart();
+    const { items, getTotals, clearCart, isLoaded } = useCart();
     const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('Cash on Delivery');
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -53,6 +53,28 @@ export default function CheckoutPage() {
             alert('Failed to place order. Please try again.');
         }
     };
+
+    // Show loading state while cart is being loaded from localStorage
+    if (!isLoaded) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--bg-primary)'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div className="animate-pulse" style={{
+                        fontSize: 'var(--font-size-lg)',
+                        color: 'var(--text-muted)'
+                    }}>
+                        Loading...
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (items.length === 0) {
         return (
@@ -197,5 +219,16 @@ export default function CheckoutPage() {
                 </button>
             </div>
         </div>
+    );
+}
+
+export default function CheckoutPage() {
+    const params = useParams();
+    const tableId = params.table as string;
+
+    return (
+        <CartProvider tableNumber={tableId}>
+            <CheckoutContent />
+        </CartProvider>
     );
 }

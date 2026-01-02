@@ -44,7 +44,7 @@ function MenuContent() {
     // instead of ID, but for now ID is fine for internal logic.
     // Display might need to be cleaner than just showing a raw UUID.
 
-    const { items: cartItems, addItem, removeItem, updateQuantity, getTotals, getItemCount } = useCart();
+    const { items: cartItems, addItem, removeItem, updateQuantity, getTotals, getItemCount, isLoaded } = useCart();
 
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [activeCategory, setActiveCategory] = useState<string>('');

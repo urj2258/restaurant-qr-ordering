@@ -12,26 +12,29 @@ interface CartContextProps {
     clearCart: () => void;
     getTotals: () => { subtotal: number; tax: number; total: number };
     getItemCount: () => number;
-    tableNumber: string; // Changed to string for UUID
+    tableNumber: string;
+    isLoaded: boolean;
 }
 
 const CartContext = createContext<CartContextProps | null>(null);
 
 export const CartProvider = ({ children, tableNumber }: { children: ReactNode; tableNumber: string }) => {
-    const [items, setItems] = useState<CartItem[]>(() => {
-        return getCart(tableNumber);
-    });
-    const [isLoaded, setIsLoaded] = useState(true);
+    // Start with empty array to avoid SSR/hydration mismatch
+    const [items, setItems] = useState<CartItem[]>([]);
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Sync state if tableNumber changes
+    // Load cart from localStorage only after client-side mount
     useEffect(() => {
-        const savedCart = getCart(tableNumber);
-        setItems(savedCart);
+        if (typeof window !== 'undefined') {
+            const savedCart = getCart(tableNumber);
+            setItems(savedCart);
+            setIsLoaded(true);
+        }
     }, [tableNumber]);
 
-    // Save cart to local storage whenever it changes
+    // Save cart to local storage whenever it changes (after initial load)
     useEffect(() => {
-        if (isLoaded) {
+        if (isLoaded && typeof window !== 'undefined') {
             saveCart(tableNumber, items);
         }
     }, [items, tableNumber, isLoaded]);
@@ -102,7 +105,8 @@ export const CartProvider = ({ children, tableNumber }: { children: ReactNode; t
                 clearCart: clearCartItems,
                 getItemCount,
                 getTotals,
-                tableNumber
+                tableNumber,
+                isLoaded
             }}
         >
             {children}
