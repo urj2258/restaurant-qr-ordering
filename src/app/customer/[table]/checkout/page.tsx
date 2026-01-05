@@ -44,7 +44,7 @@ function CheckoutContent() {
             total: totals.total
         };
 
-        const result = await createOrder(order);
+        const result = await createOrder(order, newOrderId);
         if (result) {
             clearCart();
             router.push(`/customer/${tableId}/tracking/${newOrderId}`);

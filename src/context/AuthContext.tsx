@@ -33,34 +33,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            setUser(firebaseUser);
-            setEmailVerified(firebaseUser?.emailVerified || false);
+            try {
+                setUser(firebaseUser);
+                setEmailVerified(firebaseUser?.emailVerified || false);
 
-            if (firebaseUser) {
-                const db = getFirestore();
-                const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+                if (firebaseUser) {
+                    const db = getFirestore();
+                    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
 
-                if (userDoc.exists()) {
-                    const userData = userDoc.data() as UserProfile;
-                    setProfile(userData);
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data() as UserProfile;
+                        setProfile(userData);
 
-                    // Check session expiry for non-admin users
-                    if (userData.role !== 'admin') {
-                        const expired = await isSessionExpired(firebaseUser.uid);
-                        if (expired) {
-                            console.log('Session expired, logging out...');
-                            await firebaseSignOut(auth);
-                            setProfile(null);
-                            setUser(null);
+                        // Check session expiry for non-admin users
+                        if (userData.role !== 'admin') {
+                            const expired = await isSessionExpired(firebaseUser.uid);
+                            if (expired) {
+                                console.log('Session expired, logging out...');
+                                await firebaseSignOut(auth);
+                                setProfile(null);
+                                setUser(null);
+                            }
                         }
+                    } else {
+                        setProfile(null);
                     }
                 } else {
                     setProfile(null);
                 }
-            } else {
+            } catch (error) {
+                console.error("Auth context initialization error:", error);
+                // Fail gracefully
                 setProfile(null);
+                setUser(null);
+            } finally {
+                setLoading(false);
             }
-
+        }, (error) => {
+            console.error("Auth state change error:", error);
             setLoading(false);
         });
 

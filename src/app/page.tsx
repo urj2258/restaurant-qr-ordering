@@ -17,10 +17,16 @@ export default function HomePage() {
 
   useEffect(() => {
     const loadFeaturedItems = async () => {
-      const menuItems = await fetchMenu();
-      const popular = menuItems.filter(item => item.isPopular).slice(0, 4);
-      setFeaturedItems(popular);
-      setLoading(false);
+      try {
+        const menuItems = await fetchMenu();
+        const popular = menuItems.filter(item => item.isPopular).slice(0, 4);
+        setFeaturedItems(popular);
+      } catch (err) {
+        console.error("Failed to load featured items:", err);
+        // We can choose to show an empty list or a retry button here
+      } finally {
+        setLoading(false);
+      }
     };
     loadFeaturedItems();
   }, []);
@@ -133,8 +139,8 @@ export default function HomePage() {
           </p>
 
           <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="#menu" className="btn btn-primary btn-lg" style={{ color: '#fff' }}>
-              View Our Menu
+            <a href="/customer/table-1" className="btn btn-primary btn-lg" style={{ color: '#fff' }}>
+              Order Now (Demo)
             </a>
             <a href="#contact" className="btn btn-secondary btn-lg">
               Reserve a Table

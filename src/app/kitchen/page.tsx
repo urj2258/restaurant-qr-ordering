@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { subscribeToOrders, updateOrderStatus } from '@/lib/storage';
+import Link from 'next/link';
+import { subscribeToOrders, updateOrderStatus, formatPrice } from '@/lib/storage';
 import { Order, OrderStatus } from '@/lib/types';
 import ThemeToggle from '@/components/ThemeToggle';
 import BrandIcon from '@/components/BrandIcon';
@@ -10,14 +11,14 @@ import styles from './kitchen.module.css';
 
 export default function KitchenPage() {
     const [orders, setOrders] = useState<Order[]>([]);
-    const [activeView, setActiveView] = useState<'orders' | 'menu'>('orders'); // Added activeView state
+    const [activeView, setActiveView] = useState<'orders' | 'menu'>('orders');
 
     useEffect(() => {
         // Subscribe to real-time updates
         const unsubscribe = subscribeToOrders((updatedOrders) => {
-            // Filter only active orders for kitchen (Pending, Preparing)
+            // Include 'served' orders now so we can show them in history
             const active = updatedOrders.filter(
-                o => o.status === 'pending' || o.status === 'accepted' || o.status === 'preparing' || o.status === 'ready'
+                o => ['pending', 'accepted', 'preparing', 'ready', 'served'].includes(o.status)
             );
             // Sort by oldest first (FIFO)
             active.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -27,24 +28,45 @@ export default function KitchenPage() {
         return () => unsubscribe();
     }, []);
 
-    // Moved stats calculation outside return
-    const stats = useMemo(() => ({
-        pending: orders.filter(o => o.status === 'pending').length,
-        preparing: orders.filter(o => o.status === 'preparing').length,
-        ready: orders.filter(o => o.status === 'ready').length,
-    }), [orders]);
+    // Kanban Columns Configuration
+    const columns: { id: OrderStatus; label: string; }[] = [
+        { id: 'pending', label: 'Pending' },
+        { id: 'preparing', label: 'Preparing' },
+        { id: 'ready', label: 'Ready' },
+        { id: 'served', label: 'Served' }
+    ];
+
+    const getNextStatus = (current: OrderStatus): OrderStatus | null => {
+        if (current === 'pending' || current === 'accepted') return 'preparing';
+        if (current === 'preparing') return 'ready';
+        if (current === 'ready') return 'served';
+        return null;
+    };
 
     const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
-        await updateOrderStatus(orderId, newStatus);
+        try {
+            await updateOrderStatus(orderId, newStatus);
+        } catch (error) {
+            console.error("Failed to update status:", error);
+            alert("Failed to update status. Please try again.");
+        }
+    };
+
+    // Calculate stats
+    const stats = {
+        pending: orders.filter(o => o.status === 'pending' || o.status === 'accepted').length,
+        preparing: orders.filter(o => o.status === 'preparing').length,
+        ready: orders.filter(o => o.status === 'ready').length,
+        served: orders.filter(o => o.status === 'served').length,
     };
 
     return (
         <div className={styles.kitchenLayout}>
-            {/* Sidebar */}
+            {/* Sidebar Navigation */}
             <aside className={styles.sidebar}>
                 <div className={styles.logoArea}>
                     <div className={styles.logoIcon}>
-                        <BrandIcon size={24} color="#fff" />
+                        <BrandIcon color="white" size={24} />
                     </div>
                     <span className={styles.titleText}>Abbottabad Kitchen</span>
                 </div>
@@ -54,8 +76,7 @@ export default function KitchenPage() {
                         className={`${styles.navItem} ${activeView === 'orders' ? styles.active : ''}`}
                         onClick={() => setActiveView('orders')}
                     >
-                        <span>Live Orders</span>
-                        {stats.pending > 0 && <span className={styles.navBadge}>{stats.pending}</span>}
+                        <span>Live Board</span>
                     </button>
                     <button
                         className={`${styles.navItem} ${activeView === 'menu' ? styles.active : ''}`}
@@ -65,116 +86,102 @@ export default function KitchenPage() {
                     </button>
                 </nav>
 
-                <div className={styles.sidebarFooter} style={{ marginTop: 'auto' }}>
-                    <ThemeToggle />
+                <div className={styles.sidebarFooter}>
+                    <Link href="/" className={styles.navItem}>
+                        <span>&larr; Customer View</span>
+                    </Link>
                 </div>
             </aside>
 
-            {/* Main Content */}
+            {/* Main Content Area */}
             <main className={styles.mainContent}>
                 {activeView === 'orders' ? (
-                    <div className={styles.ordersView}>
-                        <header className={styles.header}>
-                            <h2 style={{ margin: 0 }}>Active Orders</h2>
-                            <div className={styles.stats}>
-                                <div className={styles.statBox}>
-                                    <span className={styles.statLabel}>Pending</span>
-                                    <span className={styles.statValue}>{stats.pending}</span>
-                                </div>
-                                <div className={styles.statBox}>
-                                    <span className={styles.statLabel}>Preparing</span>
-                                    <span className={styles.statValue}>{stats.preparing}</span>
-                                </div>
-                                <div className={styles.statBox}>
-                                    <span className={styles.statLabel}>Ready</span>
-                                    <span className={styles.statValue}>{stats.ready}</span>
-                                </div>
-                            </div>
-                        </header>
+                    <div className={styles.kanbanBoard}>
+                        {columns.map(col => {
+                            const colOrders = orders
+                                .filter(o => {
+                                    // Treat 'accepted' as 'pending' for the board since next step is same
+                                    if (col.id === 'pending') return o.status === 'pending' || o.status === 'accepted';
+                                    return o.status === col.id;
+                                })
+                                // Sort served orders by newest first, others by oldest first
+                                .sort((a, b) => {
+                                    if (col.id === 'served') {
+                                        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+                                    }
+                                    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                                });
 
-                        <div className={styles.grid}>
-                            {orders.length === 0 ? (
-                                <div className={styles.emptyState}>No active orders</div>
-                            ) : (
-                                orders.map((order) => {
-                                    const ageMinutes = Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000);
-                                    const isAged = ageMinutes >= 15;
+                            return (
+                                <div key={col.id} className={styles.kanbanColumn}>
+                                    <div className={styles.columnHeader}>
+                                        <div className={styles.columnTitle}>
+                                            <span className={styles.columnDot} data-status={col.id}></span>
+                                            {col.label}
+                                        </div>
+                                        <span className={styles.columnCount}>{colOrders.length}</span>
+                                    </div>
 
-                                    return (
-                                        <div
-                                            key={order.id}
-                                            className={`${styles.card} ${styles[order.status]} ${isAged ? styles.aged : ''}`}
-                                        >
-                                            <div className={styles.cardHeader}>
-                                                <span className={styles.orderNumber}>#{order.id.slice(-4).toUpperCase()}</span>
-                                                <span className={styles.tableTag}>Table {order.tableId}</span>
+                                    <div className={styles.orderCards}>
+                                        {colOrders.length === 0 ? (
+                                            <div className={styles.emptyState} style={{ background: 'transparent', padding: 'var(--space-4)' }}>
+                                                No orders
                                             </div>
+                                        ) : (
+                                            colOrders.map(order => {
+                                                const nextStatus = getNextStatus(order.status);
 
-                                            <div className={styles.itemList}>
-                                                {order.items.map((item, idx) => (
-                                                    <div key={idx} className={styles.itemRow}>
-                                                        <span className={styles.itemQty}>{item.quantity}x</span>
-                                                        <div className={styles.itemDetails}>
-                                                            <div className={styles.itemName}>{item.menuItem.name}</div>
-                                                            {item.selectedSize && <div className={styles.itemVariant}>{item.selectedSize.name}</div>}
-                                                            {item.selectedExtras.length > 0 && (
-                                                                <div className={styles.itemExtras}>
-                                                                    + {item.selectedExtras.map(e => e.name).join(', ')}
+                                                return (
+                                                    <div key={order.id} className={styles.card} data-status={order.status}>
+                                                        <div className={styles.cardHeader}>
+                                                            <span className={styles.tableTag}>
+                                                                {order.tableId ? `Table ${order.tableId}` : 'Delivery'}
+                                                            </span>
+                                                            <span className={styles.orderTime}>
+                                                                {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className={styles.itemList}>
+                                                            {order.items.map((item, idx) => (
+                                                                <div key={idx} className={styles.itemRow}>
+                                                                    <span className={styles.itemQty}>{item.quantity}x</span>
+                                                                    <span className={styles.itemDetails}>{item.menuItem.name}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        <div className={styles.cardFooter}>
+                                                            <div className={styles.orderTotal}>
+                                                                <span>Total</span>
+                                                                <span className={styles.totalValue}>{formatPrice(order.total)}</span>
+                                                            </div>
+
+                                                            {nextStatus && (
+                                                                <div className={styles.actions} style={{ marginTop: 'var(--space-2)' }}>
+                                                                    <button
+                                                                        className={`btn btn-sm ${order.status === 'pending' || order.status === 'accepted' ? 'btn-primary' : 'btn-secondary'}`}
+                                                                        onClick={() => handleStatusUpdate(order.id, nextStatus)}
+                                                                    >
+                                                                        {(order.status === 'pending' || order.status === 'accepted') && 'Start Cooking →'}
+                                                                        {order.status === 'preparing' && 'Mark Ready →'}
+                                                                        {order.status === 'ready' && 'Deliver →'}
+                                                                    </button>
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
-
-                                            <div className={styles.cardFooter}>
-                                                <div className={styles.orderMeta}>
-                                                    <span className={styles.timeTag}>
-                                                        {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                    <span className={`${styles.ageTag} ${isAged ? styles.warn : ''}`}>
-                                                        {ageMinutes}m ago
-                                                    </span>
-                                                </div>
-                                                <div className={styles.actions}>
-                                                    {order.status === 'pending' && (
-                                                        <button
-                                                            className="btn btn-primary btn-sm"
-                                                            onClick={() => handleStatusUpdate(order.id, 'preparing')}
-                                                        >
-                                                            Start Prep
-                                                        </button>
-                                                    )}
-                                                    {order.status === 'preparing' && (
-                                                        <button
-                                                            className="btn btn-success btn-sm"
-                                                            onClick={() => handleStatusUpdate(order.id, 'ready')}
-                                                        >
-                                                            Mark Ready
-                                                        </button>
-                                                    )}
-                                                    {order.status === 'ready' && (
-                                                        <button
-                                                            className="btn btn-ghost btn-sm"
-                                                            onClick={() => handleStatusUpdate(order.id, 'served')}
-                                                        >
-                                                            Served
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className={styles.menuView}>
-                        <header className={styles.header}>
-                            <h2 style={{ margin: 0 }}>Menu Management</h2>
-                            <p style={{ color: 'var(--text-muted)' }}>Mange items across all platforms</p>
-                        </header>
+                        <h2 style={{ marginBottom: 'var(--space-4)' }}>Menu Management</h2>
                         <KitchenMenu />
                     </div>
                 )}

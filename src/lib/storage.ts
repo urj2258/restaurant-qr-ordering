@@ -15,8 +15,8 @@ export const fetchOrders = async (): Promise<Order[]> => {
     try {
         const querySnapshot = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')));
         return querySnapshot.docs.map(docSnapshot => ({
-            id: docSnapshot.id,
-            ...(docSnapshot.data() as Omit<Order, 'id'>)
+            ...(docSnapshot.data() as Omit<Order, 'id'>),
+            id: docSnapshot.id
         })) as Order[];
     } catch (error) {
         console.error('Error fetching orders:', error);
@@ -29,8 +29,8 @@ export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
 
     return onSnapshot(q, (snapshot) => {
         const orders = snapshot.docs.map(docSnapshot => ({
-            id: docSnapshot.id,
-            ...(docSnapshot.data() as Omit<Order, 'id'>)
+            ...(docSnapshot.data() as Omit<Order, 'id'>),
+            id: docSnapshot.id
         })) as Order[];
         callback(orders);
     }, (error) => {
@@ -43,7 +43,7 @@ export const fetchOrder = async (id: string): Promise<Order | null> => {
         const docRef = doc(db, 'orders', id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-            return { id: docSnap.id, ...(docSnap.data() as Omit<Order, 'id'>) } as Order;
+            return { ...(docSnap.data() as Omit<Order, 'id'>), id: docSnap.id } as Order;
         }
     } catch (error) {
         console.error('Error fetching order:', error);
@@ -51,14 +51,25 @@ export const fetchOrder = async (id: string): Promise<Order | null> => {
     return null;
 };
 
-export const createOrder = async (order: Omit<Order, 'id'>): Promise<Order | null> => {
+export const createOrder = async (order: Omit<Order, 'id'>, customId?: string): Promise<Order | null> => {
     try {
-        const docRef = await addDoc(collection(db, 'orders'), {
-            ...order,
-            createdAt: order.createdAt || new Date().toISOString(),
-            updatedAt: order.updatedAt || new Date().toISOString()
-        });
-        return { id: docRef.id, ...order } as Order;
+        if (customId) {
+            const { setDoc } = await import('firebase/firestore');
+            const docRef = doc(db, 'orders', customId);
+            await setDoc(docRef, {
+                ...order,
+                createdAt: order.createdAt || new Date().toISOString(),
+                updatedAt: order.updatedAt || new Date().toISOString()
+            });
+            return { id: customId, ...order } as Order;
+        } else {
+            const docRef = await addDoc(collection(db, 'orders'), {
+                ...order,
+                createdAt: order.createdAt || new Date().toISOString(),
+                updatedAt: order.updatedAt || new Date().toISOString()
+            });
+            return { id: docRef.id, ...order } as Order;
+        }
     } catch (error) {
         console.error('Error creating order:', error);
         return null;
