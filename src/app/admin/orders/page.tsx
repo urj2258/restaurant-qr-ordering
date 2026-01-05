@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Order, OrderStatus } from '@/lib/types';
-import { fetchOrders, subscribeToOrders, updateOrderStatus, formatPrice } from '@/lib/storage';
+import { Order, OrderStatus, Table } from '@/lib/types';
+import { fetchOrders, subscribeToOrders, updateOrderStatus, formatPrice, fetchTables } from '@/lib/storage';
 import ThemeToggle from '@/components/ThemeToggle';
 import BrandIcon from '@/components/BrandIcon';
 import styles from '../admin.module.css';
@@ -28,10 +28,15 @@ const nextStatus: Record<OrderStatus, OrderStatus | null> = {
 export default function OrdersPage() {
     const pathname = usePathname();
     const [orders, setOrders] = useState<Order[]>([]);
+    const [tables, setTables] = useState<Table[]>([]);
 
     const loadOrders = async () => {
-        const allOrders = await fetchOrders();
+        const [allOrders, allTables] = await Promise.all([
+            fetchOrders(),
+            fetchTables()
+        ]);
         setOrders(allOrders);
+        setTables(allTables);
     };
 
     useEffect(() => {
@@ -128,7 +133,9 @@ export default function OrdersPage() {
                                             <div className={styles.orderCardHeader}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: 'var(--space-2)' }}>
                                                     <div className={styles.tableNumber}>
-                                                        {order.tableId ? `Table ${order.tableId}` : (order.customerName || 'Delivery')}
+                                                        {order.tableId ?
+                                                            (tables.find(t => t.id === order.tableId)?.name || `Table ${order.tableId}`)
+                                                            : (order.customerName || 'Delivery')}
                                                     </div>
                                                     <span className={styles.orderTime}>
                                                         {new Date(order.createdAt).toLocaleTimeString([], {

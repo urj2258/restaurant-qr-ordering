@@ -282,7 +282,264 @@
     margin-bottom: auto;
 }
 
-/* Management View reusing styles */
+/* =========================================
+   Management View (Added Styles)
+   ========================================= */
 .managementView {
     padding: 0 var(--space-4);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.managementHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+    background: var(--bg-secondary);
+    padding: var(--space-4);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-color);
+}
+
+.categoryPills {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.pill {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+}
+
+.pill:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.pillActive {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.pillActive:hover {
+    background: var(--accent-primary);
+}
+
+.menuGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-4);
+}
+
+.menuItemCard {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+}
+
+.menuItemCard:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-primary-border);
+}
+
+.itemImage {
+    height: 180px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    background-color: var(--bg-tertiary);
+}
+
+.soldOutOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: var(--font-size-lg);
+    letter-spacing: 1px;
+}
+
+.itemContent {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.itemName {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    margin-bottom: var(--space-1);
+    color: var(--text-primary);
+}
+
+.itemCategory {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+}
+
+.itemPrice {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    margin-bottom: var(--space-4);
+}
+
+.itemActions {
+    margin-top: auto;
+    display: flex;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-color);
+}
+
+.itemActions button {
+    flex: 1;
+    font-size: var(--font-size-xs);
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--space-4);
+}
+
+.modal {
+    background: var(--bg-card);
+    width: 100%;
+    max-width: 500px;
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--border-color);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-xl);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: var(--space-6);
+    text-align: center;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+/* Image Picker in Modal */
+.imagePicker {
+    height: 200px;
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    position: relative;
+    background: var(--bg-tertiary);
+}
+
+.imagePicker:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-secondary);
+}
+
+.previewImage {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.imageOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.previewImage:hover .imageOverlay {
+    opacity: 1;
+}
+
+.imagePlaceholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.form input,
+.form textarea {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    outline: none;
+    transition: all 0.2s;
+}
+
+.form input:focus,
+.form textarea:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(244, 130, 34, 0.1);
+}
+
+.form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.modalButtons {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+}
+
+.modalButtons button {
+    flex: 1;
 }

@@ -30,7 +30,7 @@ function MenuContent() {
     const { items: cartItems, addItem, removeItem, updateQuantity, getTotals, getItemCount, isLoaded } = useCart();
 
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-    const [activeCategory, setActiveCategory] = useState<string>('');
+    const [activeCategory, setActiveCategory] = useState<string>('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
@@ -42,9 +42,11 @@ function MenuContent() {
     // Categories
     const categories = useMemo(() => {
         // defined order
-        const order = ['Special Karahi & Handi', 'BBQ & Grill', 'Rice & Biryani', 'Tandoor (Breads)', 'Sides & Salads', 'Beverages', 'Desserts'];
+        const order = ['All', 'Special Karahi & Handi', 'BBQ & Grill', 'Rice & Biryani', 'Tandoor (Breads)', 'Sides & Salads', 'Beverages', 'Desserts'];
         const availableCats = [...new Set(menuItems.map(item => item.categoryName))];
-        return order.filter(c => availableCats.includes(c)).concat(availableCats.filter(c => !order.includes(c)));
+        const cats = order.filter(c => c === 'All' || availableCats.includes(c)).concat(availableCats.filter(c => !order.includes(c)));
+        if (!cats.includes('All')) cats.unshift('All');
+        return cats;
     }, [menuItems]);
 
     useEffect(() => {
@@ -75,13 +77,13 @@ function MenuContent() {
 
     useEffect(() => {
         if (categories.length > 0 && !activeCategory) {
-            setActiveCategory(categories[0]);
+            setActiveCategory('All');
         }
     }, [categories, activeCategory]);
 
     const filteredItems = useMemo(() => {
         return menuItems.filter(item => {
-            const matchesCategory = item.categoryName === activeCategory;
+            const matchesCategory = activeCategory === 'All' || item.categoryName === activeCategory;
             const matchesSearch = searchQuery === '' ||
                 item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -193,8 +195,8 @@ function MenuContent() {
                                 whiteSpace: 'nowrap',
                                 padding: '0.6rem 1.2rem',
                                 borderRadius: '100px',
-                                background: activeCategory === category ? 'var(--text-primary)' : 'var(--bg-tertiary)',
-                                color: activeCategory === category ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                                background: activeCategory === category ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
+                                color: activeCategory === category ? '#000' : 'var(--text-secondary)',
                                 border: activeCategory === category ? 'none' : '1px solid var(--border-color)',
                                 fontSize: '0.9rem',
                                 fontWeight: 600,
@@ -260,107 +262,137 @@ function MenuContent() {
                         </div>
 
                         {/* Menu Grid */}
-                        <div>
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'baseline',
-                                marginBottom: '1.5rem',
-                                padding: '0 0.5rem'
-                            }}>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>
-                                    {activeCategory}
-                                </h2>
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                                    {filteredItems.length} items
-                                </span>
-                            </div>
+                        {activeCategory === 'All' ? (
+                            // Grouped View for 'All'
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                                {categories.filter(c => c !== 'All').map(category => {
+                                    const categoryItems = filteredItems.filter(item => item.categoryName === category);
+                                    if (categoryItems.length === 0) return null;
 
-                            <div className={styles.menuGrid}>
-                                {filteredItems.map(item => (
-                                    <MenuCard
-                                        key={item.id}
-                                        item={item}
-                                        onAdd={handleAddToCart}
-                                    />
-                                ))}
+                                    return (
+                                        <section key={category} id={`section-${category}`}>
+                                            <h2 style={{
+                                                fontSize: '1.5rem',
+                                                fontWeight: 800,
+                                                marginBottom: '1rem',
+                                                paddingLeft: '0.5rem',
+                                                borderLeft: '4px solid var(--accent-primary)',
+                                                lineHeight: 1
+                                            }}>
+                                                {category}
+                                            </h2>
+                                            <div className={styles.menuGrid}>
+                                                {categoryItems.map(item => (
+                                                    <MenuCard
+                                                        key={item.id}
+                                                        item={item}
+                                                        onAdd={handleAddToCart}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </section>
+                                    );
+                                })}
                             </div>
-
-                            {filteredItems.length === 0 && (
+                        ) : (
+                            // Single Category View
+                            <div>
                                 <div style={{
-                                    textAlign: 'center',
-                                    padding: '4rem 1rem',
-                                    color: 'var(--text-muted)'
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'baseline',
+                                    marginBottom: '1.5rem',
+                                    padding: '0 0.5rem'
                                 }}>
-                                    <p style={{ fontSize: '1.1rem' }}>No items found in this category.</p>
-                                    <button
-                                        onClick={() => setActiveCategory(categories[0])}
-                                        className="btn btn-link"
-                                        style={{ marginTop: '1rem', color: 'var(--accent-primary)' }}
-                                    >
-                                        Browse all items
-                                    </button>
+                                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>
+                                        {activeCategory}
+                                    </h2>
+                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                                        {filteredItems.length} items
+                                    </span>
                                 </div>
-                            )}
-                        </div>
+
+                                <div className={styles.menuGrid}>
+                                    {filteredItems.map(item => (
+                                        <MenuCard
+                                            key={item.id}
+                                            item={item}
+                                            onAdd={handleAddToCart}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {filteredItems.length === 0 && (
+                            <div style={{
+                                textAlign: 'center',
+                                padding: '4rem 1rem',
+                                color: 'var(--text-muted)'
+                            }}>
+                                <p style={{ fontSize: '1.1rem' }}>No items found matching your search.</p>
+                            </div>
+                        )}
                     </>
                 )}
             </main>
 
             {/* Floating Cart & Bottom Sheet */}
-            {itemCount > 0 && (
-                <>
-                    {/* Desktop/Tablet Floating Button */}
-                    <div style={{
-                        position: 'fixed',
-                        bottom: '2rem',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        zIndex: 100,
-                        width: 'calc(100% - 2rem)',
-                        maxWidth: '500px'
-                    }}>
-                        <button
-                            onClick={() => setShowMobileCart(true)}
-                            style={{
-                                width: '100%',
-                                background: 'var(--text-primary)', // High contrast black/dark
-                                color: 'var(--bg-primary)',
-                                padding: '1rem 1.5rem',
-                                borderRadius: '100px',
-                                border: 'none',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
-                                cursor: 'pointer',
-                                transition: 'transform 0.2s',
-                                fontSize: '1rem',
-                                fontWeight: 600
-                            }}
-                            className="hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <div style={{
-                                    background: 'var(--accent-primary)',
-                                    color: 'white',
-                                    width: '28px',
-                                    height: '28px',
-                                    borderRadius: '50%',
+            {
+                itemCount > 0 && (
+                    <>
+                        {/* Desktop/Tablet Floating Button */}
+                        <div style={{
+                            position: 'fixed',
+                            bottom: '2rem',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            zIndex: 100,
+                            width: 'calc(100% - 2rem)',
+                            maxWidth: '500px'
+                        }}>
+                            <button
+                                onClick={() => setShowMobileCart(true)}
+                                style={{
+                                    width: '100%',
+                                    background: 'var(--accent-primary)', // High contrast black/dark
+                                    color: '#000',
+                                    padding: '1rem 1.5rem',
+                                    borderRadius: '100px',
+                                    border: 'none',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '0.85rem'
-                                }}>
-                                    {itemCount}
+                                    justifyContent: 'space-between',
+                                    boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s',
+                                    fontSize: '1rem',
+                                    fontWeight: 600
+                                }}
+                                className="hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <div style={{
+                                        background: 'black',
+                                        color: 'white',
+                                        width: '28px',
+                                        height: '28px',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '0.85rem'
+                                    }}>
+                                        {itemCount}
+                                    </div>
+                                    <span>View Order</span>
                                 </div>
-                                <span>View Order</span>
-                            </div>
-                            <span>{formatPrice(totals.total)}</span>
-                        </button>
-                    </div>
-                </>
-            )}
+                                <span>{formatPrice(totals.total)}</span>
+                            </button>
+                        </div>
+                    </>
+                )
+            }
 
             {/* Cart Sheet (Mobile/Desktop consistent) */}
             <CartSheet
@@ -374,21 +406,23 @@ function MenuContent() {
             />
 
             {/* Customization Modal */}
-            {showModal && selectedItem && (
-                <ItemCustomizationModal
-                    item={selectedItem}
-                    onClose={() => {
-                        setShowModal(false);
-                        setSelectedItem(null);
-                    }}
-                    onAdd={(size, extras, instructions) => {
-                        addItem(selectedItem, 1, size, extras, instructions);
-                        setShowModal(false);
-                        setSelectedItem(null);
-                    }}
-                />
-            )}
-        </div>
+            {
+                showModal && selectedItem && (
+                    <ItemCustomizationModal
+                        item={selectedItem}
+                        onClose={() => {
+                            setShowModal(false);
+                            setSelectedItem(null);
+                        }}
+                        onAdd={(size, extras, instructions) => {
+                            addItem(selectedItem, 1, size, extras, instructions);
+                            setShowModal(false);
+                            setSelectedItem(null);
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 }
 
@@ -399,12 +433,20 @@ const MenuCard = memo(({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem
         <div className={`${styles.menuCard} hover:scale-[1.02] hover:shadow-lg transition-all duration-300`}>
             <div className={styles.menuCardImage}>
                 <Image
-                    src={item.image}
+                    src={item.image || '/placeholder-food.png'}
                     alt={item.name}
                     fill
                     sizes="(max-width: 768px) 50vw, 300px"
                     style={{ objectFit: 'cover' }}
                     loading="lazy"
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        // Prevent infinite loop if fallback also fails
+                        if (target.src.indexOf('placeholder-food.png') === -1) {
+                            target.src = '/placeholder-food.png';
+                        }
+                    }}
+                    unoptimized
                 />
 
                 {/* Actions overlay */}
@@ -721,7 +763,9 @@ function ItemCustomizationModal({ item, onClose, onAdd }: {
                                 borderRadius: '12px',
                                 border: '1px solid var(--border-color)',
                                 fontFamily: 'inherit',
-                                resize: 'none'
+                                resize: 'none',
+                                background: 'var(--bg-tertiary)',
+                                color: 'var(--text-primary)'
                             }}
                             rows={3}
                         />
@@ -744,12 +788,5 @@ function ItemCustomizationModal({ item, onClose, onAdd }: {
 }
 
 export default function MenuPage() {
-    const params = useParams();
-    const tableId = params.table as string;
-
-    return (
-        <CartProvider tableNumber={tableId}>
-            <MenuContent />
-        </CartProvider>
-    );
+    return <MenuContent />;
 }

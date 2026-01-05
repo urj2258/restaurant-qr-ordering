@@ -7,19 +7,13 @@ import { formatPrice, createOrder, generateId } from '@/lib/storage';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Order, PaymentMethod } from '@/lib/types';
 
-const paymentMethods: { id: PaymentMethod; label: string; icon: string }[] = [
-    { id: 'EasyPaisa', label: 'EasyPaisa', icon: '' },
-    { id: 'JazzCash', label: 'JazzCash', icon: '' },
-    { id: 'Bank Transfer', label: 'Bank Transfer', icon: '' },
-    { id: 'Cash on Delivery', label: 'Cash on Delivery', icon: '' }
-];
-
 function CheckoutContent() {
     const params = useParams();
     const router = useRouter();
     const tableId = params.table as string;
     const { items, getTotals, clearCart, isLoaded } = useCart();
-    const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('Cash on Delivery');
+    // Default to Cash because it's a restaurant table order
+    const selectedMethod: PaymentMethod = 'Cash on Delivery';
     const [isProcessing, setIsProcessing] = useState(false);
 
     const totals = getTotals();
@@ -171,43 +165,6 @@ function CheckoutContent() {
                     </div>
                 </div>
 
-                {/* Payment Method Selection */}
-                <div style={{ marginBottom: 'var(--space-8)' }}>
-                    <h3 style={{ marginBottom: 'var(--space-4)' }}>Select Payment Method</h3>
-                    <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
-                        {paymentMethods.map(method => (
-                            <label
-                                key={method.id}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 'var(--space-4)',
-                                    padding: 'var(--space-4)',
-                                    background: selectedMethod === method.id ? 'var(--accent-primary-light)' : 'var(--bg-card)',
-                                    border: selectedMethod === method.id ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                                    borderRadius: 'var(--radius-lg)',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    checked={selectedMethod === method.id}
-                                    onChange={() => setSelectedMethod(method.id)}
-                                    style={{
-                                        width: '20px',
-                                        height: '20px',
-                                        accentColor: 'var(--accent-primary)'
-                                    }}
-                                />
-                                <span style={{ fontSize: '24px' }}>{method.icon}</span>
-                                <span style={{ fontWeight: '500', flex: 1 }}>{method.label}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-
                 {/* Confirm Button */}
                 <button
                     className="btn btn-primary btn-lg"
@@ -223,12 +180,5 @@ function CheckoutContent() {
 }
 
 export default function CheckoutPage() {
-    const params = useParams();
-    const tableId = params.table as string;
-
-    return (
-        <CartProvider tableNumber={tableId}>
-            <CheckoutContent />
-        </CartProvider>
-    );
+    return <CheckoutContent />;
 }

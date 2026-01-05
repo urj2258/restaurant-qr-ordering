@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Order } from '@/lib/types';
-import { fetchOrders, formatPrice } from '@/lib/storage';
+import { Order, Table } from '@/lib/types';
+import { fetchOrders, formatPrice, fetchTables } from '@/lib/storage';
 import ThemeToggle from '@/components/ThemeToggle';
 import BrandIcon from '@/components/BrandIcon';
 import styles from './admin.module.css';
@@ -38,6 +38,7 @@ ChartJS.register(
 export default function AdminDashboard() {
     const pathname = usePathname();
     const [orders, setOrders] = useState<Order[]>([]);
+    const [tables, setTables] = useState<Table[]>([]);
     // Memoized Stats to avoid unnecessary recalculations
     const dashboardStats = useMemo(() => {
         const today = new Date().toDateString();
@@ -46,7 +47,7 @@ export default function AdminDashboard() {
         );
 
         // Stats
-        const revenue = todayOrders.reduce((sum, o) => sum + o.total, 0);
+        const revenue = todayOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
         const pending = orders.filter(o => o.status === 'pending').length;
 
         // Yesterday's stats for growth
@@ -56,7 +57,7 @@ export default function AdminDashboard() {
         const yesterdayOrders = orders.filter(o =>
             new Date(o.createdAt).toDateString() === yesterdayStr
         );
-        const yesterdayRevenue = yesterdayOrders.reduce((sum, o) => sum + o.total, 0);
+        const yesterdayRevenue = yesterdayOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
 
         const orderGrowth = yesterdayOrders.length > 0
             ? Math.round(((todayOrders.length - yesterdayOrders.length) / yesterdayOrders.length) * 100)
@@ -75,7 +76,7 @@ export default function AdminDashboard() {
 
         const dailyRevenue = last7Days.map(dateStr => {
             const dayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === dateStr);
-            return dayOrders.reduce((sum, o) => sum + o.total, 0);
+            return dayOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
         });
 
         const dailyOrderCounts = last7Days.map(dateStr => {
@@ -126,8 +127,12 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         const loadDashboardData = async () => {
-            const allOrders = await fetchOrders();
+            const [allOrders, allTables] = await Promise.all([
+                fetchOrders(),
+                fetchTables()
+            ]);
             setOrders(allOrders);
+            setTables(allTables);
         };
         loadDashboardData();
     }, []);
@@ -275,7 +280,9 @@ export default function AdminDashboard() {
                                 <div key={order.id} className={styles.orderCard}>
                                     <div className={styles.orderCardHeader}>
                                         <div className={styles.tableNumber}>
-                                            Table {order.tableId}
+                                            {order.tableId ?
+                                                (tables.find(t => t.id === order.tableId)?.name || `Table ${order.tableId}`)
+                                                : 'Delivery'}
                                         </div>
                                         <span className={styles.orderTime}>
                                             {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -335,7 +342,9 @@ export default function AdminDashboard() {
                                         </div>
                                         <p className={styles.reviewComment}>&quot;{order.feedback?.comment}&quot;</p>
                                         <div className={styles.reviewCustomer}>
-                                            Table {order.tableId} • {order.items[0]?.menuItem.name}
+                                            {order.tableId ?
+                                                (tables.find(t => t.id === order.tableId)?.name || `Table ${order.tableId}`)
+                                                : 'Delivery'} • {order.items[0]?.menuItem.name}
                                         </div>
                                     </div>
                                 ))

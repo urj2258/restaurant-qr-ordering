@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { subscribeToOrders, updateOrderStatus, formatPrice } from '@/lib/storage';
-import { Order, OrderStatus } from '@/lib/types';
+import { subscribeToOrders, updateOrderStatus, formatPrice, fetchTables } from '@/lib/storage';
+import { Order, OrderStatus, Table } from '@/lib/types';
 import ThemeToggle from '@/components/ThemeToggle';
 import BrandIcon from '@/components/BrandIcon';
 import KitchenMenu from './components/KitchenMenu';
@@ -11,6 +11,7 @@ import styles from './kitchen.module.css';
 
 export default function KitchenPage() {
     const [orders, setOrders] = useState<Order[]>([]);
+    const [tables, setTables] = useState<Table[]>([]);
     const [activeView, setActiveView] = useState<'orders' | 'menu'>('orders');
 
     useEffect(() => {
@@ -24,6 +25,9 @@ export default function KitchenPage() {
             active.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
             setOrders(active);
         });
+
+        // Load tables for name lookup
+        fetchTables().then(setTables);
 
         return () => unsubscribe();
     }, []);
@@ -135,7 +139,9 @@ export default function KitchenPage() {
                                                     <div key={order.id} className={styles.card} data-status={order.status}>
                                                         <div className={styles.cardHeader}>
                                                             <span className={styles.tableTag}>
-                                                                {order.tableId ? `Table ${order.tableId}` : 'Delivery'}
+                                                                {order.tableId ?
+                                                                    (tables.find(t => t.id === order.tableId)?.name || `Table ${order.tableId}`)
+                                                                    : 'Delivery'}
                                                             </span>
                                                             <span className={styles.orderTime}>
                                                                 {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

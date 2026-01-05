@@ -46,7 +46,7 @@ export default function AnalyticsPage() {
         const cutoff = new Date(now.setDate(now.getDate() - rangeInDays));
 
         const filteredOrders = orders.filter(o => new Date(o.createdAt) >= cutoff);
-        const revenue = filteredOrders.reduce((sum, o) => sum + o.total, 0);
+        const revenue = filteredOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
 
         // Group by day/month for charts
         const grouped: Record<string, { revenue: number, count: number }> = {};
@@ -60,7 +60,7 @@ export default function AnalyticsPage() {
                 : new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
             grouped[dateStr] = {
-                revenue: (grouped[dateStr]?.revenue || 0) + order.total,
+                revenue: (grouped[dateStr]?.revenue || 0) + (Number(order.total) || 0),
                 count: (grouped[dateStr]?.count || 0) + 1
             };
 
@@ -76,7 +76,7 @@ export default function AnalyticsPage() {
             });
 
             if (order.tableId) {
-                tableStats[order.tableId] = (tableStats[order.tableId] || 0) + order.total;
+                tableStats[order.tableId] = (tableStats[order.tableId] || 0) + (Number(order.total) || 0);
             }
         });
 
@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
             const d = new Date(o.createdAt);
             return d >= prevCutoff && d < cutoff;
         });
-        const prevRevenue = prevOrders.reduce((sum, o) => sum + o.total, 0);
+        const prevRevenue = prevOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
         const growth = prevRevenue > 0 ? ((revenue - prevRevenue) / prevRevenue) * 100 : 0;
 
         return {
