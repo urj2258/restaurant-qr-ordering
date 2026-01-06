@@ -15,8 +15,13 @@ export default function RouteGuard({ children, requiredRole }: RouteGuardProps) 
     const router = useRouter();
     const pathname = usePathname();
 
+    const isLoginPage = pathname === '/admin/login' || pathname === '/kitchen/login';
+
     useEffect(() => {
         if (!loading) {
+            // Skip checks for login pages
+            if (isLoginPage) return;
+
             // 1. Not logged in
             if (!user) {
                 // Determine login path based on requested route
@@ -45,7 +50,7 @@ export default function RouteGuard({ children, requiredRole }: RouteGuardProps) 
                 }
             }
         }
-    }, [user, profile, loading, router, pathname, requiredRole]);
+    }, [user, profile, loading, router, pathname, requiredRole, isLoginPage]);
 
     if (loading) {
         return (
@@ -61,6 +66,9 @@ export default function RouteGuard({ children, requiredRole }: RouteGuardProps) 
             </div>
         );
     }
+
+    // Always render login pages
+    if (isLoginPage) return <>{children}</>;
 
     // If no user, render nothing while redirecting
     if (!user) return null;
